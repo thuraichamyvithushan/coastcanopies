@@ -18,5 +18,9 @@ export const env = {
   smtpUser: process.env.SMTP_USER,
   smtpPass: process.env.SMTP_PASS,
   quoteToEmail: process.env.QUOTE_TO_EMAIL || "admin@coastcanopies.com",
-  clientUrl: process.env.CLIENT_URL || "http://localhost:5173"
+  clientUrl: process.env.CLIENT_URL || "http://localhost:5173",
+  clientUrls: String(process.env.CLIENT_URL || "http://localhost:5173")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean)
 };

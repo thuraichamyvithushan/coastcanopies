@@ -41,13 +41,21 @@ export default function AdminLoginPage() {
         {error ? <div className="mt-6 rounded-2xl bg-red-500/10 p-4 text-sm text-red-200">{error}</div> : null}
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-          <Field label="Email" name="email" type="email" value={form.email} onChange={handleChange} />
+          <Field
+            label="Email"
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={handleChange}
+            autoComplete="username"
+          />
           <Field
             label="Password"
             name="password"
             type="password"
             value={form.password}
             onChange={handleChange}
+            autoComplete="current-password"
           />
           <button
             type="submit"
@@ -62,7 +70,7 @@ export default function AdminLoginPage() {
   );
 }
 
-const Field = ({ label, name, type, value, onChange }) => (
+const Field = ({ label, name, type, value, onChange, autoComplete }) => (
   <label className="block">
     <span className="mb-2 block text-sm uppercase tracking-[0.25em] text-white/55">{label}</span>
     <input
@@ -71,6 +79,7 @@ const Field = ({ label, name, type, value, onChange }) => (
       name={name}
       value={value}
       onChange={onChange}
+      autoComplete={autoComplete}
       className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none transition focus:border-[#f9bf1a]"
     />
   </label>

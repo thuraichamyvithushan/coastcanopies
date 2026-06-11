@@ -10,12 +10,25 @@ import { errorHandler, notFoundHandler } from "./middleware/errorMiddleware.js";
 
 export const app = express();
 const uploadsDirectory = fileURLToPath(new URL("../uploads", import.meta.url));
+const corsOptions = {
+  origin(origin, callback) {
+    // Allow same-origin server-to-server calls and non-browser clients.
+    if (!origin) {
+      return callback(null, true);
+    }
 
-app.use(
-  cors({
-    origin: env.clientUrl
-  })
-);
+    if (env.clientUrls.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(express.json({ limit: "35mb" }));
 app.use(morgan("dev"));
 app.use("/uploads", express.static(path.resolve(uploadsDirectory)));
