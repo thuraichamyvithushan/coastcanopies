@@ -28,3 +28,5 @@ app.use("/api", publicRouter);
 app.use("/api/admin", adminRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
+
+export default app;
