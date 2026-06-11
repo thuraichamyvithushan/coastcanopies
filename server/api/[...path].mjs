@@ -19,6 +19,10 @@ export default async function handler(req, res) {
   const requestPath = req.url || "/";
   const missingEnv = getMissingRequiredEnv();
 
+  if (req.method === "OPTIONS") {
+    return app(req, res);
+  }
+
   if (missingEnv.length) {
     return res.status(500).json({
       message: "Missing required environment variables",

@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const required = ["MONGODB_URI", "JWT_SECRET"];
+const defaultClientUrls = ["http://localhost:5173", "https://coastcanopies.vercel.app"];
 export const getMissingRequiredEnv = () => required.filter((key) => !process.env[key]);
 
 export const env = {
@@ -18,9 +19,16 @@ export const env = {
   smtpUser: process.env.SMTP_USER,
   smtpPass: process.env.SMTP_PASS,
   quoteToEmail: process.env.QUOTE_TO_EMAIL || "admin@coastcanopies.com",
-  clientUrl: process.env.CLIENT_URL || "http://localhost:5173",
-  clientUrls: String(process.env.CLIENT_URL || "http://localhost:5173")
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean)
+  clientUrl: process.env.CLIENT_URL || defaultClientUrls[0],
+  clientUrls: Array.from(
+    new Set(
+      [
+        ...defaultClientUrls,
+        ...String(process.env.CLIENT_URL || "")
+          .split(",")
+          .map((value) => value.trim())
+          .filter(Boolean)
+      ]
+    )
+  )
 };
