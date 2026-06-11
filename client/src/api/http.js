@@ -18,10 +18,18 @@ export const request = async (path, options = {}) => {
     return null;
   }
 
-  const data = await response.json().catch(() => ({}));
+  const contentType = response.headers.get("content-type") || "";
+  const isJsonResponse = contentType.includes("application/json");
+  const data = isJsonResponse ? await response.json().catch(() => ({})) : null;
 
   if (!response.ok) {
-    throw new Error(data.message || "Request failed");
+    throw new Error(data?.message || `Request failed (${response.status})`);
+  }
+
+  if (!isJsonResponse) {
+    throw new Error(
+      `Expected JSON from ${buildUrl(path)}. Check VITE_API_URL and Vercel routing.`
+    );
   }
 
   return data;

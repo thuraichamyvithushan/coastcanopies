@@ -1,13 +1,21 @@
 import { request } from "./http.js";
 
+const ensureArrayResponse = (value, label) => {
+  if (!Array.isArray(value)) {
+    throw new Error(`${label} API returned an unexpected response. Check backend URL and deployment config.`);
+  }
+
+  return value;
+};
+
 export const loginAdmin = (payload) =>
   request("/api/admin/login", {
     method: "POST",
     body: JSON.stringify(payload)
   });
 
-export const fetchVehicles = () => request("/api/vehicles");
-export const fetchProducts = () => request("/api/products");
+export const fetchVehicles = async () => ensureArrayResponse(await request("/api/vehicles"), "Vehicles");
+export const fetchProducts = async () => ensureArrayResponse(await request("/api/products"), "Products");
 export const fetchQuotes = (token) =>
   request("/api/admin/quotes", {
     token
