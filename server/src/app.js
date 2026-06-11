@@ -10,6 +10,16 @@ import { errorHandler, notFoundHandler } from "./middleware/errorMiddleware.js";
 
 export const app = express();
 const uploadsDirectory = fileURLToPath(new URL("../uploads", import.meta.url));
+const normalizeOrigin = (value) => String(value || "").trim().replace(/\/+$/, "");
+const allowedOrigins = new Set(
+  [
+    "http://localhost:5173",
+    "https://coastcanopies.vercel.app",
+    ...env.clientUrls
+  ]
+    .map(normalizeOrigin)
+    .filter(Boolean)
+);
 const corsOptions = {
   origin(origin, callback) {
     // Allow same-origin server-to-server calls and non-browser clients.
@@ -17,7 +27,7 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    if (env.clientUrls.includes(origin)) {
+    if (allowedOrigins.has(normalizeOrigin(origin))) {
       return callback(null, true);
     }
 
