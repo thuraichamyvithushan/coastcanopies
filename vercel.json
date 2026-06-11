@@ -1,33 +1,19 @@
 {
-  "version": 2,
-  "builds": [
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build --workspace client",
+  "outputDirectory": "client/dist",
+  "rewrites": [
     {
-      "src": "api/index.mjs",
-      "use": "@vercel/node"
+      "source": "/api/(.*)",
+      "destination": "/server/api/index.mjs"
     },
     {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "client/dist"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.mjs"
+      "source": "/uploads/(.*)",
+      "destination": "/server/api/index.mjs"
     },
     {
-      "src": "/uploads/(.*)",
-      "dest": "/api/index.mjs"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }

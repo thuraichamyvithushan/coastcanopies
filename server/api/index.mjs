@@ -1,5 +1,5 @@
-import { app } from "../server/src/app.js";
-import { connectDatabase } from "../server/src/config/db.js";
+import { app } from "../src/app.js";
+import { connectDatabase } from "../src/config/db.js";
 
 let databaseConnectionPromise;
 
