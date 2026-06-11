@@ -20,6 +20,14 @@ app.use(express.json({ limit: "35mb" }));
 app.use(morgan("dev"));
 app.use("/uploads", express.static(path.resolve(uploadsDirectory)));
 
+app.get("/", (_req, res) => {
+  res.json({
+    ok: true,
+    service: "coast-canopies-api",
+    health: "/api/health"
+  });
+});
+
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
 });
