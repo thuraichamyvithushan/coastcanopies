@@ -49,7 +49,7 @@ Important defaults:
 
 - Admin login route: `/admin/login`
 - Default admin email: `admin@coastcanopies.com`
-- Default admin password: `ChangeMe123!`
+- Default admin password: `admin@1212`
 
 ## Install
 

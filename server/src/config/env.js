@@ -12,7 +12,7 @@ export const env = {
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
   adminEmail: process.env.ADMIN_EMAIL || "admin@coastcanopies.com",
-  adminPassword: process.env.ADMIN_PASSWORD || "ChangeMe123!",
+  adminPassword: process.env.ADMIN_PASSWORD || "admin@1212",
   smtpHost: process.env.SMTP_HOST,
   smtpPort: Number(process.env.SMTP_PORT || 587),
   smtpSecure: process.env.SMTP_SECURE === "true",
