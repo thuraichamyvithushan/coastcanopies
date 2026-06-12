@@ -1,6 +1,7 @@
 import { Suspense, useLayoutEffect, useMemo, useRef } from "react";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
+import { Box3, Vector3 } from "three";
 import { resolveAssetUrl } from "../../utils/assetUrl.js";
 
 const vehicleProfiles = {
@@ -93,7 +94,8 @@ const previewFrame = {
   minDistance: 4.4,
   maxDistance: 18,
   sceneYOffset: 0.18,
-  target: [0.24, 1.22, 0]
+  target: [0.24, 1.22, 0],
+  frameOffsetScale: 1
 };
 
 const vehicleFrameOffsets = {
@@ -124,6 +126,16 @@ const rubberProps = {
 };
 
 const degreesToRadians = (value) => (Number(value) * Math.PI) / 180;
+
+const getPreviewFrame = (canvasWidth) =>
+  canvasWidth < 720
+    ? {
+        ...previewFrame,
+        cameraPosition: [0, 3.1, 12.9],
+        target: [0.08, 1.22, 0],
+        frameOffsetScale: 0.72
+      }
+    : previewFrame;
 
 const normalizeVector3 = (value, fallback) => {
   const vector = [Number(value?.x), Number(value?.y), Number(value?.z)];
@@ -211,6 +223,7 @@ function ProceduralVehicle({ profile }) {
 
 function LoadedVehicleModel({ vehicle }) {
   const { scene } = useGLTF(resolveAssetUrl(vehicle.modelUrl));
+  const wrapperRef = useRef(null);
   const model = useMemo(() => {
     const next = scene.clone(true);
     next.traverse((node) => {
@@ -222,11 +235,37 @@ function LoadedVehicleModel({ vehicle }) {
     return next;
   }, [scene]);
 
-  const scale = normalizeVector3(vehicle.modelScale, [1, 1, 1]);
-  const position = normalizeVector3(vehicle.modelPosition, [0, 0, 0]);
-  const rotation = normalizeVector3(vehicle.modelRotation, [0, 0, 0]).map(degreesToRadians);
+  const scale = useMemo(() => normalizeVector3(vehicle.modelScale, [1, 1, 1]), [vehicle.modelScale]);
+  const position = useMemo(() => normalizeVector3(vehicle.modelPosition, [0, 0, 0]), [vehicle.modelPosition]);
+  const rotation = useMemo(
+    () => normalizeVector3(vehicle.modelRotation, [0, 0, 0]).map(degreesToRadians),
+    [vehicle.modelRotation]
+  );
 
-  return <primitive object={model} scale={scale} position={position} rotation={rotation} />;
+  useLayoutEffect(() => {
+    if (!wrapperRef.current) {
+      return;
+    }
+
+    // Re-center the imported model so its true bounding box sits in the middle of the preview frame.
+    wrapperRef.current.position.set(0, 0, 0);
+    wrapperRef.current.updateWorldMatrix(true, true);
+
+    const box = new Box3().setFromObject(wrapperRef.current);
+    if (box.isEmpty()) {
+      return;
+    }
+
+    const center = new Vector3();
+    box.getCenter(center);
+    wrapperRef.current.position.set(-center.x, -box.min.y, -center.z);
+  }, [model, position, rotation, scale]);
+
+  return (
+    <group ref={wrapperRef}>
+      <primitive object={model} scale={scale} position={position} rotation={rotation} />
+    </group>
+  );
 }
 
 function CanopyShell({ trayLength, trayHeight, canopy }) {
@@ -395,13 +434,17 @@ function SelectedAddOns({ modules, accessories, trayHeight, trayLength }) {
   return parts;
 }
 
-function TruckScene({ vehicle, canopy, modules, accessories }) {
+function TruckScene({ vehicle, canopy, modules, accessories, layout }) {
   const profile = vehicleProfiles[vehicle.slug] || defaultVehicleProfile;
   const trayHeight = profile.trayHeight;
-  const frameOffset = vehicleFrameOffsets[vehicle.slug] || defaultVehicleFrameOffset;
+  const rawFrameOffset = vehicleFrameOffsets[vehicle.slug] || defaultVehicleFrameOffset;
+  const frameOffset = {
+    x: rawFrameOffset.x * layout.frameOffsetScale,
+    z: rawFrameOffset.z
+  };
 
   return (
-    <group position={[-frameOffset.x, previewFrame.sceneYOffset, -frameOffset.z]}>
+    <group position={[-frameOffset.x, layout.sceneYOffset, -frameOffset.z]}>
       {vehicle.modelUrl ? (
         <Suspense fallback={<ProceduralVehicle profile={profile} />}>
           <LoadedVehicleModel vehicle={vehicle} />
@@ -459,19 +502,19 @@ function ShowroomStage() {
   );
 }
 
-function PreviewControls({ sceneKey }) {
+function PreviewControls({ sceneKey, layout }) {
   const controlsRef = useRef(null);
   const { camera } = useThree();
 
   useLayoutEffect(() => {
-    camera.position.set(...previewFrame.cameraPosition);
-    camera.lookAt(...previewFrame.target);
+    camera.position.set(...layout.cameraPosition);
+    camera.lookAt(...layout.target);
 
     if (controlsRef.current) {
-      controlsRef.current.target.set(...previewFrame.target);
+      controlsRef.current.target.set(...layout.target);
       controlsRef.current.update();
     }
-  }, [camera, sceneKey]);
+  }, [camera, layout, sceneKey]);
 
   return (
     <OrbitControls
@@ -480,14 +523,27 @@ function PreviewControls({ sceneKey }) {
       enablePan={false}
       enableDamping
       dampingFactor={0.08}
-      minDistance={previewFrame.minDistance}
-      maxDistance={previewFrame.maxDistance}
+      minDistance={layout.minDistance}
+      maxDistance={layout.maxDistance}
       minPolarAngle={Math.PI / 3.3}
       maxPolarAngle={Math.PI / 2.02}
       rotateSpeed={0.72}
       zoomSpeed={1.35}
-      target={previewFrame.target}
+      target={layout.target}
     />
+  );
+}
+
+function SceneContent({ vehicle, canopy, modules, accessories, sceneKey }) {
+  const { size } = useThree();
+  const layout = useMemo(() => getPreviewFrame(size.width), [size.width]);
+
+  return (
+    <>
+      <ShowroomStage />
+      <TruckScene vehicle={vehicle} canopy={canopy} modules={modules} accessories={accessories} layout={layout} />
+      <PreviewControls sceneKey={sceneKey} layout={layout} />
+    </>
   );
 }
 
@@ -516,12 +572,13 @@ export default function ThreeDPreview({ vehicle, canopy, modules, accessories })
       <directionalLight position={[-6, 4, -5]} intensity={1.1} color="#8ea6ff" />
       <spotLight position={[0, 9, 0]} intensity={1.2} angle={0.3} penumbra={0.6} color="#f9bf1a" />
       <spotLight position={[-6, 7, -2]} intensity={0.6} angle={0.42} penumbra={0.9} color="#f5efe3" />
-
-      <ShowroomStage />
-
-      <TruckScene vehicle={vehicle} canopy={canopy} modules={modules} accessories={accessories} />
-
-      <PreviewControls sceneKey={sceneKey} />
+      <SceneContent
+        vehicle={vehicle}
+        canopy={canopy}
+        modules={modules}
+        accessories={accessories}
+        sceneKey={sceneKey}
+      />
     </Canvas>
   );
 }

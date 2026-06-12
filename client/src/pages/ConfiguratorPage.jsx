@@ -63,12 +63,6 @@ export default function ConfiguratorPage() {
   const selectedAccessories = accessories.filter((item) => accessoryIds.includes(item._id));
   const buildComplete = Boolean(vehicle && canopy && moduleIds.length > 0 && accessoryIds.length > 0);
 
-  const builderHighlights = [
-    { value: "3D", label: "Interactive live concept" },
-    { value: String(vehicles.length), label: "Vehicle platforms" },
-    { value: String(products.length), label: "Build options" }
-  ];
-
   useEffect(() => {
     if (!vehicle) {
       setOpenStep("1");
@@ -211,16 +205,6 @@ export default function ConfiguratorPage() {
               <p className="mt-2 max-w-3xl text-sm text-white/68 md:text-base">
                 Choose the vehicle, fitment, modules, and accessories in one builder flow.
               </p>
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {builderHighlights.map((item) => (
-                  <div key={item.label} className="rounded-[1rem] border border-white/10 bg-black/20 p-3 last:col-span-2 sm:last:col-span-1 md:rounded-[1.2rem] md:p-4">
-                    <p className="font-display text-2xl uppercase tracking-[0.08em] text-[#f9bf1a] md:text-3xl">{item.value}</p>
-                    <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-white/58 md:mt-2 md:text-sm md:tracking-[0.22em]">
-                      {item.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
 
@@ -231,8 +215,8 @@ export default function ConfiguratorPage() {
               {error}
             </div>
           ) : (
-            <div className="grid gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] xl:items-start xl:gap-8">
-              <div className="order-1 sticky top-2 z-20 self-start md:top-3 xl:top-6">
+            <div className="grid gap-6 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:items-start md:gap-8">
+              <div className="order-1 sticky top-2 z-20 self-start md:flex md:justify-center md:top-6 lg:justify-start">
                 <PreviewPanel
                   vehicle={vehicle}
                   canopy={canopy}
@@ -241,7 +225,7 @@ export default function ConfiguratorPage() {
                 />
               </div>
 
-              <div className="order-2 space-y-4 xl:max-h-[calc(100vh-1.5rem)] xl:overflow-y-auto xl:pr-2 configurator-steps-scroll">
+              <div className="order-2 space-y-4 md:max-h-[calc(100vh-1.5rem)] md:overflow-y-auto md:pr-2 configurator-steps-scroll">
                 <StepCard
                   index="1"
                   title="Vehicle Selection"

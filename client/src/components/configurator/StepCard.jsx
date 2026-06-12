@@ -13,10 +13,10 @@ export const StepCard = ({ index, title, summary, active, complete, open, onTogg
         <p className="font-display text-[11px] uppercase tracking-[0.3em] text-[#f9bf1a] md:text-xs md:tracking-[0.38em]">
           Step {index}
         </p>
-        <h3 className="mt-1.5 font-display text-xl uppercase leading-[1.05] tracking-[0.05em] text-white md:text-[1.65rem] md:tracking-[0.06em] xl:text-[1.75rem] 2xl:text-[1.9rem]">
+        <h3 className="mt-1 font-display text-lg uppercase leading-[1.05] tracking-[0.04em] text-white md:text-[1.35rem] md:tracking-[0.05em] xl:text-[1.45rem] 2xl:text-[1.55rem]">
           {title}
         </h3>
-        <p className="mt-2 max-w-2xl text-xs leading-5 text-white/58 md:text-sm">
+        <p className="mt-1.5 max-w-2xl text-[11px] leading-4.5 text-white/58 md:text-xs md:leading-5">
           {summary}
         </p>
       </div>
