@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchProducts, fetchVehicles, submitQuote } from "../api/admin.js";
-import { ProductCard } from "../components/configurator/ProductCard.jsx";
 import { PreviewPanel } from "../components/configurator/PreviewPanel.jsx";
 import { PriceSummary } from "../components/configurator/PriceSummary.jsx";
 import { QuoteForm } from "../components/configurator/QuoteForm.jsx";
@@ -22,6 +21,7 @@ export default function ConfiguratorPage() {
   const navigate = useNavigate();
   const [vehicles, setVehicles] = useState([]);
   const [products, setProducts] = useState([]);
+  const [openStep, setOpenStep] = useState("1");
   const [selectedVehicleId, setSelectedVehicleId] = useState("");
   const [selectedCanopyId, setSelectedCanopyId] = useState("");
   const [moduleIds, setModuleIds] = useState([]);
@@ -71,6 +71,17 @@ export default function ConfiguratorPage() {
 
   useEffect(() => {
     if (!vehicle) {
+      setOpenStep("1");
+      return;
+    }
+
+    if (!canopy) {
+      setOpenStep((current) => (current === "3" || current === "4" ? "2" : current));
+    }
+  }, [vehicle, canopy]);
+
+  useEffect(() => {
+    if (!vehicle) {
       setSelectedCanopyId("");
       setModuleIds([]);
       setAccessoryIds([]);
@@ -109,6 +120,43 @@ export default function ConfiguratorPage() {
       selectedIds.includes(id) ? selectedIds.filter((item) => item !== id) : [...selectedIds, id]
     );
   };
+
+  const handleVehicleSelect = (vehicleId) => {
+    setSelectedVehicleId(vehicleId);
+    if (vehicleId) {
+      setOpenStep("2");
+    }
+  };
+
+  const handleCanopySelect = (canopyId) => {
+    setSelectedCanopyId(canopyId);
+    if (canopyId) {
+      setOpenStep("3");
+    }
+  };
+
+  const toggleStep = (step) => {
+    setOpenStep((current) => (current === step ? "" : step));
+  };
+
+  const vehicleSummary = vehicle
+    ? `${vehicle.name} • ${formatCurrency(vehicle.price)}`
+    : "Choose a vehicle platform to unlock the rest of the build.";
+  const canopySummary = canopy
+    ? `${canopy.name} • ${formatCurrency(canopy.price)}`
+    : vehicle
+      ? "Choose one base system for the selected vehicle."
+      : "Pick a vehicle first to see matching base systems.";
+  const modulesSummary = selectedModules.length
+    ? `${selectedModules.length} module${selectedModules.length > 1 ? "s" : ""} selected`
+    : vehicle && canopy
+      ? "Add one or more modules to shape the build."
+      : "Available after vehicle and base system selection.";
+  const accessoriesSummary = selectedAccessories.length
+    ? `${selectedAccessories.length} accessorie${selectedAccessories.length > 1 ? "s" : "y"} selected`
+    : vehicle && canopy
+      ? "Add finishing accessories for the final setup."
+      : "Available after vehicle and base system selection.";
 
   const handleFormChange = (event) => {
     const { name, value } = event.target;
@@ -184,56 +232,66 @@ export default function ConfiguratorPage() {
             </div>
           ) : (
             <div className="grid gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] xl:items-start xl:gap-8">
-              <div className="order-1 xl:self-start">
-                <div className="sticky top-2 z-20 md:top-3 xl:top-6">
-                  <PreviewPanel
-                    vehicle={vehicle}
-                    canopy={canopy}
-                    modules={selectedModules}
-                    accessories={selectedAccessories}
-                  />
-                </div>
+              <div className="order-1 sticky top-2 z-20 self-start md:top-3 xl:top-6">
+                <PreviewPanel
+                  vehicle={vehicle}
+                  canopy={canopy}
+                  modules={selectedModules}
+                  accessories={selectedAccessories}
+                />
               </div>
 
-              <div className="order-2 space-y-6 xl:max-h-[calc(100vh-1.5rem)] xl:overflow-y-auto xl:pr-2 configurator-steps-scroll">
-                <StepCard index="1" title="Vehicle Selection" active={!vehicle} complete={Boolean(vehicle)}>
-                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
-                    {vehicles.map((item) => (
-                      <ProductCard
-                        key={item._id}
-                        item={item}
-                        selected={item._id === selectedVehicleId}
-                        onClick={() => setSelectedVehicleId(item._id)}
-                        priceLabel={formatCurrency(item.price)}
-                        description={`${item.brand} platform with canopy-ready fitment.`}
-                        badge="Vehicle platform"
-                      />
-                    ))}
+              <div className="order-2 space-y-4 xl:max-h-[calc(100vh-1.5rem)] xl:overflow-y-auto xl:pr-2 configurator-steps-scroll">
+                <StepCard
+                  index="1"
+                  title="Vehicle Selection"
+                  summary={vehicleSummary}
+                  active={!vehicle}
+                  complete={Boolean(vehicle)}
+                  open={openStep === "1"}
+                  onToggle={() => toggleStep("1")}
+                >
+                  <div className="space-y-2.5">
+                    <div className="grid gap-2.5">
+                      {vehicles.map((item) => (
+                        <CompactOptionRow
+                          key={item._id}
+                          title={item.name}
+                          priceLabel={formatCurrency(item.price)}
+                          selected={item._id === selectedVehicleId}
+                          onClick={() => handleVehicleSelect(item._id)}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </StepCard>
 
                 <StepCard
                   index="2"
                   title="Base System"
+                  summary={canopySummary}
                   active={Boolean(vehicle) && !canopy}
                   complete={Boolean(canopy)}
+                  open={openStep === "2"}
+                  onToggle={() => toggleStep("2")}
                 >
                   {vehicle && !canopies.length ? (
-                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4 text-white/65">
+                    <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-3 text-sm text-white/65">
                       No base systems are configured for the selected vehicle yet.
                     </div>
                   ) : (
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
-                      {canopies.map((item) => (
-                        <ProductCard
-                          key={item._id}
-                          item={item}
-                          selected={item._id === selectedCanopyId}
-                          onClick={() => setSelectedCanopyId(item._id)}
-                          priceLabel={formatCurrency(item.price)}
-                          badge={vehicle ? `Fits ${vehicle.name}` : "Base system"}
-                        />
-                      ))}
+                    <div className="space-y-2.5">
+                      <div className="grid gap-2.5">
+                        {canopies.map((item) => (
+                          <CompactOptionRow
+                            key={item._id}
+                            title={item.name}
+                            priceLabel={formatCurrency(item.price)}
+                            selected={item._id === selectedCanopyId}
+                            onClick={() => handleCanopySelect(item._id)}
+                          />
+                        ))}
+                      </div>
                     </div>
                   )}
                 </StepCard>
@@ -241,28 +299,32 @@ export default function ConfiguratorPage() {
                 <StepCard
                   index="3"
                   title="Modules"
+                  summary={modulesSummary}
                   active={Boolean(vehicle && canopy)}
                   complete={moduleIds.length > 0}
+                  open={openStep === "3"}
+                  onToggle={() => toggleStep("3")}
                 >
                   {!vehicle ? (
-                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4 text-white/65">
+                    <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-3 text-sm text-white/65">
                       Choose a vehicle first to see compatible modules.
                     </div>
                   ) : modules.length ? (
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
-                      {modules.map((item) => (
-                        <ProductCard
-                          key={item._id}
-                          item={item}
-                          selected={moduleIds.includes(item._id)}
-                          onClick={() => toggleSelection(item._id, moduleIds, setModuleIds)}
-                          priceLabel={formatCurrency(item.price)}
-                          badge={`Fits ${vehicle.name}`}
-                        />
-                      ))}
+                    <div className="space-y-2.5">
+                      <div className="space-y-2.5">
+                        {modules.map((item) => (
+                          <CompactCheckboxRow
+                            key={item._id}
+                            title={item.name}
+                            checked={moduleIds.includes(item._id)}
+                            onToggle={() => toggleSelection(item._id, moduleIds, setModuleIds)}
+                            priceLabel={formatCurrency(item.price)}
+                          />
+                        ))}
+                      </div>
                     </div>
                   ) : (
-                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4 text-white/65">
+                    <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-3 text-sm text-white/65">
                       No modules are configured for the selected vehicle yet.
                     </div>
                   )}
@@ -271,28 +333,32 @@ export default function ConfiguratorPage() {
                 <StepCard
                   index="4"
                   title="Accessories"
+                  summary={accessoriesSummary}
                   active={Boolean(vehicle && canopy)}
                   complete={accessoryIds.length > 0}
+                  open={openStep === "4"}
+                  onToggle={() => toggleStep("4")}
                 >
                   {!vehicle ? (
-                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4 text-white/65">
+                    <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-3 text-sm text-white/65">
                       Choose a vehicle first to see compatible accessories.
                     </div>
                   ) : accessories.length ? (
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
-                      {accessories.map((item) => (
-                        <ProductCard
-                          key={item._id}
-                          item={item}
-                          selected={accessoryIds.includes(item._id)}
-                          onClick={() => toggleSelection(item._id, accessoryIds, setAccessoryIds)}
-                          priceLabel={formatCurrency(item.price)}
-                          badge={`Fits ${vehicle.name}`}
-                        />
-                      ))}
+                    <div className="space-y-2.5">
+                      <div className="space-y-2.5">
+                        {accessories.map((item) => (
+                          <CompactCheckboxRow
+                            key={item._id}
+                            title={item.name}
+                            checked={accessoryIds.includes(item._id)}
+                            onToggle={() => toggleSelection(item._id, accessoryIds, setAccessoryIds)}
+                            priceLabel={formatCurrency(item.price)}
+                          />
+                        ))}
+                      </div>
                     </div>
                   ) : (
-                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4 text-white/65">
+                    <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-3 text-sm text-white/65">
                       No accessories are configured for the selected vehicle yet.
                     </div>
                   )}
@@ -328,3 +394,49 @@ export default function ConfiguratorPage() {
     </SiteShell>
   );
 }
+
+const CompactOptionRow = ({ title, priceLabel, selected, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`flex w-full items-center justify-between gap-3 rounded-[1rem] border px-3 py-3 text-left transition ${
+      selected
+        ? "border-[#f9bf1a]/40 bg-[#f9bf1a]/8"
+        : "border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.05]"
+    }`}
+  >
+    <span className="min-w-0 font-display text-sm uppercase tracking-[0.04em] text-white md:text-base">
+      {title}
+    </span>
+    <span className="shrink-0 rounded-full border border-white/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-[#f9bf1a]">
+      {priceLabel}
+    </span>
+  </button>
+);
+
+const CompactCheckboxRow = ({ title, checked, onToggle, priceLabel }) => (
+  <label
+    className={`flex cursor-pointer items-start gap-3 rounded-[1rem] border p-3 transition ${
+      checked
+        ? "border-[#f9bf1a]/40 bg-[#f9bf1a]/8"
+        : "border-white/10 bg-white/[0.03]"
+    }`}
+  >
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={onToggle}
+      className="mt-1 h-4 w-4 shrink-0 accent-[#f9bf1a]"
+    />
+    <div className="min-w-0 flex-1">
+      <div className="flex items-start justify-between gap-3">
+        <p className="min-w-0 font-display text-sm uppercase tracking-[0.04em] text-white md:text-base">
+          {title}
+        </p>
+        <span className="shrink-0 rounded-full border border-white/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-[#f9bf1a]">
+          {priceLabel}
+        </span>
+      </div>
+    </div>
+  </label>
+);
