@@ -15,16 +15,12 @@ const initialForm = {
   slug: "",
   brand: "",
   svgBase: "/assets/vehicles/new-vehicle.svg",
-  modelUrl: "",
-  modelScale: '{\n  "x": 1,\n  "y": 1,\n  "z": 1\n}',
-  modelPosition: '{\n  "x": 0,\n  "y": 0,\n  "z": 0\n}',
-  modelRotation: '{\n  "x": 0,\n  "y": 0,\n  "z": 0\n}',
   price: "0",
   canvasSize: '{\n  "width": 1000,\n  "height": 600\n}'
 };
 
 const initialSelectedFiles = {
-  modelFile: null
+  svgFile: null
 };
 
 export default function VehicleManagerPage() {
@@ -72,10 +68,6 @@ export default function VehicleManagerPage() {
       slug: vehicle.slug,
       brand: vehicle.brand,
       svgBase: vehicle.svgBase,
-      modelUrl: vehicle.modelUrl || "",
-      modelScale: JSON.stringify(vehicle.modelScale || { x: 1, y: 1, z: 1 }, null, 2),
-      modelPosition: JSON.stringify(vehicle.modelPosition || { x: 0, y: 0, z: 0 }, null, 2),
-      modelRotation: JSON.stringify(vehicle.modelRotation || { x: 0, y: 0, z: 0 }, null, 2),
       price: String(vehicle.price),
       canvasSize: JSON.stringify(vehicle.canvasSize, null, 2)
     });
@@ -95,21 +87,18 @@ export default function VehicleManagerPage() {
 
     try {
       const vehicleSlug = form.slug.trim();
-      const modelUrl = selectedFiles.modelFile
+      const svgBase = selectedFiles.svgFile
         ? await uploadSelectedAsset(auth.token, {
-            assetType: "model",
-            file: selectedFiles.modelFile,
+            assetType: "vehicle-svg",
+            file: selectedFiles.svgFile,
             slug: vehicleSlug
           })
-        : form.modelUrl;
+        : form.svgBase || `/assets/vehicles/${vehicleSlug}-base.svg`;
 
       const payload = {
         ...form,
-        modelUrl,
+        svgBase,
         price: Number(form.price),
-        modelScale: JSON.parse(form.modelScale),
-        modelPosition: JSON.parse(form.modelPosition),
-        modelRotation: JSON.parse(form.modelRotation),
         canvasSize: JSON.parse(form.canvasSize)
       };
 
@@ -143,7 +132,7 @@ export default function VehicleManagerPage() {
   return (
     <AdminLayout
       title="Vehicle Manager"
-      description="Maintain available vehicle platforms and the 3D model transforms that power the configurator preview."
+      description="Maintain available vehicle platforms and 2D vector layout presets that power the configurator preview."
     >
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
         <form onSubmit={handleSubmit} className="panel rounded-[2rem] p-6">
@@ -155,39 +144,22 @@ export default function VehicleManagerPage() {
             <Field label="Slug" name="slug" value={form.slug} onChange={handleChange} />
             <Field label="Brand" name="brand" value={form.brand} onChange={handleChange} />
             <FileField
-              label="3D Model File"
-              name="modelFile"
-              accept=".glb,model/gltf-binary,application/octet-stream"
+              label="2D Base Image File"
+              name="svgFile"
+              accept=".svg,.png,.jpg,.jpeg,image/svg+xml,image/png,image/jpeg"
               onChange={handleFileChange}
               hint={
-                selectedFiles.modelFile
-                  ? `Selected: ${selectedFiles.modelFile.name}`
-                  : "Choose a GLB from your folder, or leave it empty to use the procedural fallback."
+                selectedFiles.svgFile
+                  ? `Selected: ${selectedFiles.svgFile.name}`
+                  : "Choose an SVG, PNG, or JPG file for the vehicle side profile."
               }
             />
-            <JsonTextAreaField
-              label="Model Scale JSON"
-              name="modelScale"
-              value={form.modelScale}
+            <Field
+              label="Base Image Path"
+              name="svgBase"
+              value={form.svgBase}
               onChange={handleChange}
-              rows={5}
-              hint='Example: { "x": 1, "y": 1, "z": 1 }'
-            />
-            <JsonTextAreaField
-              label="Model Position JSON"
-              name="modelPosition"
-              value={form.modelPosition}
-              onChange={handleChange}
-              rows={5}
-              hint='Example: { "x": 0, "y": 0, "z": 0 }'
-            />
-            <JsonTextAreaField
-              label="Model Rotation JSON"
-              name="modelRotation"
-              value={form.modelRotation}
-              onChange={handleChange}
-              rows={5}
-              hint='Degrees. Example: { "x": 0, "y": 180, "z": 0 }'
+              placeholder="/assets/vehicles/toyota-hilux-base.svg"
             />
             <Field label="Price" name="price" type="number" value={form.price} onChange={handleChange} />
             <JsonTextAreaField
@@ -230,7 +202,7 @@ export default function VehicleManagerPage() {
                       {vehicle.brand} • {vehicle.slug}
                     </p>
                     <p className="mt-2 text-sm text-white/45">
-                      {vehicle.modelUrl ? "3D model attached" : "Procedural 3D fallback"}
+                      {vehicle.svgBase ? "2D base artwork attached" : "2D artwork fallback"}
                     </p>
                   </div>
                   <div className="flex gap-3">

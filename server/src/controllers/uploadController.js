@@ -8,14 +8,26 @@ const uploadRoots = {
   "vehicle-svg": {
     directory: fileURLToPath(new URL("../../uploads/vehicles", import.meta.url)),
     publicPath: "/uploads/vehicles",
-    allowedExtensions: new Set([".svg"]),
-    allowedMimeTypes: new Set(["image/svg+xml", "text/plain", "application/octet-stream"])
+    allowedExtensions: new Set([".svg", ".png", ".jpg", ".jpeg"]),
+    allowedMimeTypes: new Set([
+      "image/svg+xml",
+      "image/png",
+      "image/jpeg",
+      "text/plain",
+      "application/octet-stream"
+    ])
   },
   "product-svg": {
     directory: fileURLToPath(new URL("../../uploads/products", import.meta.url)),
     publicPath: "/uploads/products",
-    allowedExtensions: new Set([".svg"]),
-    allowedMimeTypes: new Set(["image/svg+xml", "text/plain", "application/octet-stream"])
+    allowedExtensions: new Set([".svg", ".png", ".jpg", ".jpeg"]),
+    allowedMimeTypes: new Set([
+      "image/svg+xml",
+      "image/png",
+      "image/jpeg",
+      "text/plain",
+      "application/octet-stream"
+    ])
   },
   model: {
     directory: fileURLToPath(new URL("../../uploads/vehicles/models", import.meta.url)),

@@ -1,6 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 310 170">
-  <rect x="6" y="18" width="298" height="136" rx="14" fill="#292929" stroke="#f9bf1a" stroke-width="4"/>
-  <rect x="28" y="38" width="96" height="82" rx="10" fill="#0f0f0f" stroke="#8a8a8a"/>
-  <rect x="140" y="38" width="138" height="82" rx="10" fill="#101010" stroke="#8a8a8a"/>
-  <rect x="16" y="130" width="278" height="14" rx="7" fill="#3c3c3c"/>
+  <defs>
+    <linearGradient id="tradeShell" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#4e565d"/>
+      <stop offset="0.55" stop-color="#2d3339"/>
+      <stop offset="1" stop-color="#16191d"/>
+    </linearGradient>
+    <linearGradient id="tradeGlass" x1="0" x2="1">
+      <stop offset="0" stop-color="#111316"/>
+      <stop offset="1" stop-color="#3b4248"/>
+    </linearGradient>
+  </defs>
+  <rect width="310" height="170" fill="none"/>
+  <ellipse cx="156" cy="146" rx="124" ry="8" fill="#0d0e10" opacity=".15"/>
+  <path d="M18 126h274v12c0 8-6 14-14 14H30c-7 0-12-5-12-12z" fill="#292e34"/>
+  <path d="M22 40h258c12 0 20 8 20 20v65H10V54c0-8 5-14 12-14z" fill="url(#tradeShell)"/>
+  <path d="M37 55h84c8 0 14 6 14 14v40c0 8-6 14-14 14H37z" fill="url(#tradeGlass)"/>
+  <path d="M149 55h110c10 0 18 8 18 18v36c0 10-8 18-18 18H149z" fill="url(#tradeGlass)"/>
+  <path d="M37 55h84M149 55h110" stroke="#ffffff" stroke-opacity=".16" stroke-width="4" stroke-linecap="round"/>
+  <path d="M134 46l14-11h105l18 11" fill="none" stroke="#a8b0b7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M26 82h258" stroke="#f2c453" stroke-width="4" stroke-linecap="round" opacity=".9"/>
+  <path d="M145 58v58M216 58v58" stroke="#c0c6cc" stroke-opacity=".16" stroke-width="4"/>
+  <path d="M54 117h210" stroke="#1d2125" stroke-width="6" stroke-linecap="round"/>
+  <path d="M73 65v47M97 65v47" stroke="#9aa2aa" stroke-opacity=".24" stroke-width="3"/>
 </svg>

@@ -162,18 +162,25 @@ export default function HomePage() {
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#f9bf1a]/40 to-transparent" />
         <div className="absolute left-1/2 top-16 h-64 w-64 -translate-x-1/2 rounded-full bg-[#f9bf1a]/8 blur-3xl" />
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="gold-surface gold-outline rounded-[2.6rem] p-8">
+          <div className="gold-surface gold-outline relative overflow-hidden rounded-[2.6rem] p-8">
+            <div className="mb-6 h-48 w-full overflow-hidden rounded-[1.8rem] border border-[#f9bf1a]/20">
+              <img
+                src="/assets/generated/premium-canopy-showcase.png"
+                alt="Coast Canopies Signature Build Showcase"
+                className="h-full w-full object-cover transition duration-500 hover:scale-105"
+              />
+            </div>
             <p className="font-display text-sm uppercase tracking-[0.5em] text-[#f9bf1a]">Visual Direction</p>
-            <h2 className="mt-4 max-w-lg font-display text-5xl leading-[0.95] tracking-[-0.05em] text-white">
+            <h2 className="mt-3 max-w-lg font-display text-4xl leading-[0.95] tracking-[-0.05em] text-white">
               More premium glow, less generic dark UI.
             </h2>
-            <p className="mt-5 max-w-xl text-white/68">
+            <p className="mt-4 max-w-xl text-white/68">
               The new page leans into a black, champagne, and gold palette with warmer depth and cleaner composition,
               giving Coast Canopies a sharper luxury identity.
             </p>
             <Link
               to="/configurator"
-              className="mt-8 inline-flex rounded-full border border-[#f9bf1a]/35 px-6 py-3 text-white transition hover:bg-[#f9bf1a] hover:text-black"
+              className="mt-6 inline-flex rounded-full border border-[#f9bf1a]/35 px-6 py-3 text-white transition hover:bg-[#f9bf1a] hover:text-black"
             >
               Explore the Builder
             </Link>

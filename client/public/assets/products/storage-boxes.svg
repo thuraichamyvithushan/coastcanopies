@@ -1,6 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 72">
-  <rect x="10" y="16" width="62" height="42" rx="7" fill="#262626" stroke="#f9bf1a" stroke-width="3"/>
-  <rect x="88" y="10" width="62" height="48" rx="7" fill="#303030" stroke="#f9bf1a" stroke-width="3"/>
-  <line x1="24" y1="28" x2="58" y2="28" stroke="#8d8d8d" stroke-width="4" stroke-linecap="round"/>
-  <line x1="102" y1="24" x2="136" y2="24" stroke="#8d8d8d" stroke-width="4" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="toolboxMetal" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#596067"/>
+      <stop offset="0.5" stop-color="#2d3238"/>
+      <stop offset="1" stop-color="#171a1e"/>
+    </linearGradient>
+  </defs>
+  <rect width="160" height="72" fill="none"/>
+  <ellipse cx="80" cy="60" rx="58" ry="4" fill="#0d0f11" opacity=".14"/>
+  <rect x="8" y="17" width="64" height="38" rx="7" fill="url(#toolboxMetal)"/>
+  <rect x="88" y="13" width="64" height="42" rx="7" fill="url(#toolboxMetal)"/>
+  <path d="M14 24h52M95 20h50" stroke="#f2c453" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M24 35h32M104 31h32" stroke="#c8cdd1" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M18 49h44M96 49h48" stroke="#181c20" stroke-width="4" stroke-linecap="round"/>
 </svg>

@@ -6,7 +6,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 const defaultVector3 = (x, y, z) => ({ x, y, z });
 
 const sanitizeVector3 = (value, fallback, fieldName) => {
-  if (!value) {
+  if (!value || typeof value !== "object") {
     return fallback;
   }
 
@@ -16,11 +16,11 @@ const sanitizeVector3 = (value, fallback, fieldName) => {
     z: Number(value.z)
   };
 
-  if ([vector.x, vector.y, vector.z].some((entry) => Number.isNaN(entry))) {
-    throw new ApiError(400, `${fieldName} requires numeric x, y, and z values`);
-  }
-
-  return vector;
+  return {
+    x: Number.isFinite(vector.x) ? vector.x : fallback.x,
+    y: Number.isFinite(vector.y) ? vector.y : fallback.y,
+    z: Number.isFinite(vector.z) ? vector.z : fallback.z
+  };
 };
 
 const sanitizeVehiclePayload = (payload) => {

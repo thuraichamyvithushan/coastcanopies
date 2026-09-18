@@ -158,17 +158,17 @@ export default function ProductManagerPage() {
               </select>
             </label>
             <FileField
-              label="Product SVG File"
+              label="Product Image File"
               name="productSvgFile"
-              accept=".svg,image/svg+xml"
+              accept=".svg,.png,.jpg,.jpeg,image/svg+xml,image/png,image/jpeg"
               onChange={handleFileChange}
               required={!editingId && !form.svg}
               hint={
                 selectedFiles.productSvgFile
                   ? `Selected: ${selectedFiles.productSvgFile.name}`
                   : editingId
-                    ? "Choose a new SVG only if you want to replace the current product artwork."
-                    : "Choose an SVG from your folder."
+                    ? "Choose a new SVG, PNG, or JPG only if you want to replace the current product artwork."
+                    : "Choose an SVG, PNG, or JPG from your folder."
               }
             />
             <Field label="Price" name="price" type="number" value={form.price} onChange={handleChange} />

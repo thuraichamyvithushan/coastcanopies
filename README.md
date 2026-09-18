@@ -57,9 +57,9 @@ Important defaults:
 npm install
 ```
 
-## Seed Default Data
+## Seed Admin Account
 
-This creates the admin account, four vehicles, and the default canopy/module/accessory catalog.
+This ensures the default admin account exists. Vehicles and products are now managed from the admin screens instead of being seeded from code.
 
 ```bash
 npm run seed

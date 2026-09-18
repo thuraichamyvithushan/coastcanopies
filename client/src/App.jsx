@@ -20,6 +20,8 @@ export default function App() {
         <Route path="/" element={<ConfiguratorPage />} />
         <Route path="/configurator" element={<Navigate to="/" replace />} />
         <Route path="/quote-success" element={<QuoteSuccessPage />} />
+        <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
+        <Route path="/admin/" element={<Navigate to="/admin/login" replace />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route
           path="/admin/dashboard"

@@ -1,14 +1,10 @@
 import { env } from "../config/env.js";
 import { connectDatabase } from "../config/db.js";
-import { defaultProducts } from "../data/defaultProducts.js";
-import { defaultVehicles } from "../data/defaultVehicles.js";
 import { Admin } from "../models/Admin.js";
-import { Product } from "../models/Product.js";
-import { Vehicle } from "../models/Vehicle.js";
 
-const seed = async () => {
-  await connectDatabase();
+import { pathToFileURL } from "node:url";
 
+export const autoSeed = async ({ syncPassword = false } = {}) => {
   let admin = await Admin.findOne({ email: env.adminEmail.toLowerCase() });
 
   if (!admin) {
@@ -18,36 +14,26 @@ const seed = async () => {
       role: "admin"
     });
     await admin.save();
-  } else if (!(await admin.comparePassword(env.adminPassword))) {
+    console.log(`Created default admin account: ${env.adminEmail}`);
+  } else if (syncPassword && !(await admin.comparePassword(env.adminPassword))) {
     admin.password = env.adminPassword;
     await admin.save();
+    console.log(`Updated admin password for: ${env.adminEmail}`);
   }
 
-  await Promise.all(
-    defaultVehicles.map((vehicle) =>
-      Vehicle.findOneAndUpdate({ slug: vehicle.slug }, vehicle, {
-        upsert: true,
-        new: true,
-        runValidators: true
-      })
-    )
-  );
+  console.log("Admin seed completed successfully");
+};
 
-  await Promise.all(
-    defaultProducts.map((product) =>
-      Product.findOneAndUpdate({ slug: product.slug }, product, {
-        upsert: true,
-        new: true,
-        runValidators: true
-      })
-    )
-  );
-
-  console.log("Database seeded successfully");
+const runStandaloneSeed = async () => {
+  await connectDatabase();
+  await autoSeed({ syncPassword: true });
   process.exit(0);
 };
 
-seed().catch((error) => {
-  console.error("Seed failed", error);
-  process.exit(1);
-});
+const isDirectRun = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isDirectRun) {
+  runStandaloneSeed().catch((error) => {
+    console.error("Seed failed", error);
+    process.exit(1);
+  });
+}

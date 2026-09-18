@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchProducts, fetchVehicles, submitQuote } from "../api/admin.js";
 import { PreviewPanel } from "../components/configurator/PreviewPanel.jsx";
-import { PriceSummary } from "../components/configurator/PriceSummary.jsx";
-import { QuoteForm } from "../components/configurator/QuoteForm.jsx";
-import { StepCard } from "../components/configurator/StepCard.jsx";
 import { SiteShell } from "../components/layout/SiteShell.jsx";
+import { resolveAssetUrl } from "../utils/assetUrl.js";
 import { formatCurrency } from "../utils/currency.js";
 import { hasProductPositionForVehicle } from "../utils/productHelpers.js";
 
@@ -21,7 +19,7 @@ export default function ConfiguratorPage() {
   const navigate = useNavigate();
   const [vehicles, setVehicles] = useState([]);
   const [products, setProducts] = useState([]);
-  const [openStep, setOpenStep] = useState("1");
+  const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedVehicleId, setSelectedVehicleId] = useState("");
   const [selectedCanopyId, setSelectedCanopyId] = useState("");
   const [moduleIds, setModuleIds] = useState([]);
@@ -47,7 +45,39 @@ export default function ConfiguratorPage() {
     load();
   }, []);
 
+  const brands = useMemo(
+    () => Array.from(new Set(vehicles.map((item) => item.brand).filter(Boolean))).sort(),
+    [vehicles]
+  );
+
+  const filteredVehicles = useMemo(
+    () => vehicles.filter((item) => !selectedBrand || item.brand === selectedBrand),
+    [selectedBrand, vehicles]
+  );
+
   const vehicle = vehicles.find((item) => item._id === selectedVehicleId) || null;
+
+  useEffect(() => {
+    if (vehicle?.brand && vehicle.brand !== selectedBrand) {
+      setSelectedBrand(vehicle.brand);
+    }
+  }, [selectedBrand, vehicle]);
+
+  useEffect(() => {
+    if (!selectedVehicleId) {
+      return;
+    }
+
+    const matchesBrand = filteredVehicles.some((item) => item._id === selectedVehicleId);
+
+    if (!matchesBrand) {
+      setSelectedVehicleId("");
+      setSelectedCanopyId("");
+      setModuleIds([]);
+      setAccessoryIds([]);
+    }
+  }, [filteredVehicles, selectedVehicleId]);
+
   const compatibleProducts = (type) =>
     products.filter(
       (item) =>
@@ -61,18 +91,7 @@ export default function ConfiguratorPage() {
   const canopy = canopies.find((item) => item._id === selectedCanopyId) || null;
   const selectedModules = modules.filter((item) => moduleIds.includes(item._id));
   const selectedAccessories = accessories.filter((item) => accessoryIds.includes(item._id));
-  const buildComplete = Boolean(vehicle && canopy && moduleIds.length > 0 && accessoryIds.length > 0);
-
-  useEffect(() => {
-    if (!vehicle) {
-      setOpenStep("1");
-      return;
-    }
-
-    if (!canopy) {
-      setOpenStep((current) => (current === "3" || current === "4" ? "2" : current));
-    }
-  }, [vehicle, canopy]);
+  const buildReady = Boolean(vehicle && canopy);
 
   useEffect(() => {
     if (!vehicle) {
@@ -115,42 +134,17 @@ export default function ConfiguratorPage() {
     );
   };
 
-  const handleVehicleSelect = (vehicleId) => {
-    setSelectedVehicleId(vehicleId);
-    if (vehicleId) {
-      setOpenStep("2");
-    }
+  const handleBrandChange = (event) => {
+    setSelectedBrand(event.target.value);
   };
 
-  const handleCanopySelect = (canopyId) => {
-    setSelectedCanopyId(canopyId);
-    if (canopyId) {
-      setOpenStep("3");
-    }
+  const handleVehicleSelect = (event) => {
+    setSelectedVehicleId(event.target.value);
   };
 
-  const toggleStep = (step) => {
-    setOpenStep((current) => (current === step ? "" : step));
+  const handleCanopySelect = (id) => {
+    setSelectedCanopyId(id);
   };
-
-  const vehicleSummary = vehicle
-    ? `${vehicle.name} • ${formatCurrency(vehicle.price)}`
-    : "Choose a vehicle platform to unlock the rest of the build.";
-  const canopySummary = canopy
-    ? `${canopy.name} • ${formatCurrency(canopy.price)}`
-    : vehicle
-      ? "Choose one base system for the selected vehicle."
-      : "Pick a vehicle first to see matching base systems.";
-  const modulesSummary = selectedModules.length
-    ? `${selectedModules.length} module${selectedModules.length > 1 ? "s" : ""} selected`
-    : vehicle && canopy
-      ? "Add one or more modules to shape the build."
-      : "Available after vehicle and base system selection.";
-  const accessoriesSummary = selectedAccessories.length
-    ? `${selectedAccessories.length} accessorie${selectedAccessories.length > 1 ? "s" : "y"} selected`
-    : vehicle && canopy
-      ? "Add finishing accessories for the final setup."
-      : "Available after vehicle and base system selection.";
 
   const handleFormChange = (event) => {
     const { name, value } = event.target;
@@ -161,7 +155,7 @@ export default function ConfiguratorPage() {
     event.preventDefault();
 
     if (!vehicle || !canopy) {
-      setError("Please choose a vehicle and a base system before submitting a quote.");
+      setError("Please choose a vehicle and canopy system before requesting a quote.");
       return;
     }
 
@@ -193,30 +187,15 @@ export default function ConfiguratorPage() {
 
   return (
     <SiteShell>
-      <section className="px-4 pb-12 pt-3 md:px-6 md:pb-16 md:pt-6">
-        <div className="mx-auto max-w-7xl space-y-6 md:space-y-8">
-          <div className="gold-surface gold-outline relative overflow-hidden rounded-[1.4rem] p-4 md:rounded-[2rem] md:p-6">
-            <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(249,191,26,0.18),transparent_70%)] md:h-32" />
-            <div className="relative">
-              <p className="text-xs uppercase tracking-[0.35em] text-[#f9bf1a]">Configurator</p>
-              <h1 className="mt-2 font-display text-2xl uppercase tracking-[0.06em] text-white md:text-4xl">
-                Build your canopy system in 3D
-              </h1>
-              <p className="mt-2 max-w-3xl text-sm text-white/68 md:text-base">
-                Choose the vehicle, fitment, modules, and accessories in one builder flow.
-              </p>
-            </div>
-          </div>
-
+      <section className="min-h-screen bg-[linear-gradient(180deg,#f5efe5_0%,#efe3cf_18%,#f7f1e7_18%,#f7f1e7_100%)] px-3 pb-28 pt-2 md:px-5 md:pb-20 md:pt-5">
+        <div className="mx-auto max-w-7xl">
           {loading ? (
-            <div className="panel rounded-[2rem] p-10 text-center text-white/65">Loading configurator data...</div>
-          ) : error ? (
-            <div className="rounded-[2rem] border border-red-500/30 bg-red-500/10 p-5 text-red-200">
-              {error}
+            <div className="rounded-[1.75rem] border border-[#dbc9ab] bg-white p-10 text-center text-[#433b2d] shadow-[0_18px_35px_rgba(72,54,29,0.08)]">
+              Loading configurator data...
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:items-start md:gap-8">
-              <div className="order-1 sticky top-2 z-20 self-start md:flex md:justify-center md:top-6 lg:justify-start">
+            <>
+              <div className="sticky top-2 z-20 -mx-1 bg-[linear-gradient(180deg,rgba(247,241,231,0.96)_0%,rgba(247,241,231,0.92)_78%,rgba(247,241,231,0)_100%)] px-1 pb-3 pt-1 backdrop-blur lg:hidden">
                 <PreviewPanel
                   vehicle={vehicle}
                   canopy={canopy}
@@ -225,153 +204,218 @@ export default function ConfiguratorPage() {
                 />
               </div>
 
-              <div className="order-2 space-y-4 md:max-h-[calc(100vh-1.5rem)] md:overflow-y-auto md:pr-2 configurator-steps-scroll">
-                <StepCard
-                  index="1"
-                  title="Vehicle Selection"
-                  summary={vehicleSummary}
-                  active={!vehicle}
-                  complete={Boolean(vehicle)}
-                  open={openStep === "1"}
-                  onToggle={() => toggleStep("1")}
-                >
-                  <div className="space-y-2.5">
-                    <div className="grid gap-2.5">
-                      {vehicles.map((item) => (
-                        <CompactOptionRow
-                          key={item._id}
-                          title={item.name}
-                          priceLabel={formatCurrency(item.price)}
-                          selected={item._id === selectedVehicleId}
-                          onClick={() => handleVehicleSelect(item._id)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </StepCard>
+              <div className="grid gap-4 lg:mt-2 lg:gap-6 lg:grid-cols-[minmax(0,5.75fr)_minmax(380px,4.25fr)] lg:items-start xl:grid-cols-[minmax(0,6fr)_minmax(420px,4fr)]">
+                <aside className="order-1 -mx-1 hidden sm:mx-0 lg:sticky lg:top-4 lg:block lg:self-start">
+                  <PreviewPanel
+                    vehicle={vehicle}
+                    canopy={canopy}
+                    modules={selectedModules}
+                    accessories={selectedAccessories}
+                  />
+                </aside>
 
-                <StepCard
-                  index="2"
-                  title="Base System"
-                  summary={canopySummary}
-                  active={Boolean(vehicle) && !canopy}
-                  complete={Boolean(canopy)}
-                  open={openStep === "2"}
-                  onToggle={() => toggleStep("2")}
-                >
-                  {vehicle && !canopies.length ? (
-                    <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-3 text-sm text-white/65">
-                      No base systems are configured for the selected vehicle yet.
+                <div className="order-2 space-y-4 md:space-y-5">
+                  {error ? (
+                    <div className="rounded-[1.4rem] border border-red-300/60 bg-red-50 p-5 text-sm text-red-800">
+                      {error}
                     </div>
-                  ) : (
-                    <div className="space-y-2.5">
-                      <div className="grid gap-2.5">
+                  ) : null}
+
+                  <BuilderSection
+                    step="01"
+                    eyebrow="Your Vehicle Details"
+                    title="Choose the base vehicle"
+                    description="This drives the compatible canopy, module, and accessory options shown below."
+                  >
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2">
+                      <SelectField
+                        label="Vehicle brand"
+                        value={selectedBrand}
+                        onChange={handleBrandChange}
+                        options={brands.map((brand) => ({ value: brand, label: brand }))}
+                        placeholder="All brands"
+                      />
+                      <SelectField
+                        label="Vehicle platform"
+                        value={selectedVehicleId}
+                        onChange={handleVehicleSelect}
+                        options={filteredVehicles.map((item) => ({
+                          value: item._id,
+                          label: `${item.name} (${formatCurrency(item.price)})`
+                        }))}
+                        placeholder={selectedBrand ? "Choose vehicle" : "Choose a brand or vehicle"}
+                      />
+                    </div>
+                    {vehicle ? (
+                      <div className="mt-5 overflow-hidden rounded-[1.3rem] border border-[#ead9bc] bg-[#fbf6ed] text-sm text-[#564b3e]">
+                        <div className="flex min-h-[190px] items-center justify-center border-b border-[#ead9bc] bg-[linear-gradient(180deg,#fffaf3_0%,#f6efe3_100%)] p-4 sm:min-h-[220px] md:min-h-[250px]">
+                          <img
+                            src={resolveAssetUrl(vehicle.svgBase || `/assets/vehicles/${vehicle.slug}-base.svg`)}
+                            alt={vehicle.name}
+                            className="max-h-[160px] w-full max-w-[440px] object-contain sm:max-h-[190px] md:max-h-[220px]"
+                          />
+                        </div>
+                        <div className="p-4">
+                          <span className="font-display uppercase tracking-[0.16em] text-[#946d15]">{vehicle.brand}</span>
+                          <p className="mt-2 text-lg text-[#1f1b15]">{vehicle.name}</p>
+                          <p className="mt-2 text-[#6a5f51]">
+                            Base platform estimate: {formatCurrency(vehicle.price)}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <EmptyState copy="Choose a brand and platform to unlock compatible canopy systems and add-ons." />
+                    )}
+                  </BuilderSection>
+
+                  <BuilderSection
+                    step="02"
+                    eyebrow="Canopy Package"
+                    title="Choose your tray canopy system"
+                    description="Select one primary canopy package for the currently selected vehicle platform."
+                  >
+                    {!vehicle ? (
+                      <EmptyState copy="Vehicle selection comes first so we can show only canopy systems that actually fit." />
+                    ) : !canopies.length ? (
+                      <EmptyState copy="No canopy systems are configured for this vehicle yet." />
+                    ) : (
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2">
                         {canopies.map((item) => (
-                          <CompactOptionRow
+                          <OptionTile
                             key={item._id}
                             title={item.name}
-                            priceLabel={formatCurrency(item.price)}
+                            price={item.price}
                             selected={item._id === selectedCanopyId}
                             onClick={() => handleCanopySelect(item._id)}
                           />
                         ))}
                       </div>
-                    </div>
-                  )}
-                </StepCard>
+                    )}
+                  </BuilderSection>
 
-                <StepCard
-                  index="3"
-                  title="Modules"
-                  summary={modulesSummary}
-                  active={Boolean(vehicle && canopy)}
-                  complete={moduleIds.length > 0}
-                  open={openStep === "3"}
-                  onToggle={() => toggleStep("3")}
-                >
-                  {!vehicle ? (
-                    <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-3 text-sm text-white/65">
-                      Choose a vehicle first to see compatible modules.
-                    </div>
-                  ) : modules.length ? (
-                    <div className="space-y-2.5">
-                      <div className="space-y-2.5">
+                  <BuilderSection
+                    step="03"
+                    eyebrow="Add Modules"
+                    title="Configure storage and utility upgrades"
+                    description="Layer in compatible modules to shape the tray and canopy around how the vehicle will actually be used."
+                  >
+                    {!vehicle || !canopy ? (
+                      <EmptyState copy="Choose the vehicle and canopy package first to reveal compatible module upgrades." />
+                    ) : !modules.length ? (
+                      <EmptyState copy="No modules are configured for this vehicle yet." />
+                    ) : (
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2">
                         {modules.map((item) => (
-                          <CompactCheckboxRow
+                          <OptionTile
                             key={item._id}
                             title={item.name}
-                            checked={moduleIds.includes(item._id)}
-                            onToggle={() => toggleSelection(item._id, moduleIds, setModuleIds)}
-                            priceLabel={formatCurrency(item.price)}
+                            price={item.price}
+                            selected={moduleIds.includes(item._id)}
+                            onClick={() => toggleSelection(item._id, moduleIds, setModuleIds)}
                           />
                         ))}
                       </div>
-                    </div>
-                  ) : (
-                    <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-3 text-sm text-white/65">
-                      No modules are configured for the selected vehicle yet.
-                    </div>
-                  )}
-                </StepCard>
+                    )}
+                  </BuilderSection>
 
-                <StepCard
-                  index="4"
-                  title="Accessories"
-                  summary={accessoriesSummary}
-                  active={Boolean(vehicle && canopy)}
-                  complete={accessoryIds.length > 0}
-                  open={openStep === "4"}
-                  onToggle={() => toggleStep("4")}
-                >
-                  {!vehicle ? (
-                    <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-3 text-sm text-white/65">
-                      Choose a vehicle first to see compatible accessories.
-                    </div>
-                  ) : accessories.length ? (
-                    <div className="space-y-2.5">
-                      <div className="space-y-2.5">
+                  <BuilderSection
+                    step="04"
+                    eyebrow="Accessories"
+                    title="Finish the build with external accessories"
+                    description="Choose the optional finishing items that complete the touring, trade, or service setup."
+                  >
+                    {!vehicle || !canopy ? (
+                      <EmptyState copy="Choose the vehicle and canopy package first to reveal compatible accessories." />
+                    ) : !accessories.length ? (
+                      <EmptyState copy="No accessories are configured for this vehicle yet." />
+                    ) : (
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2">
                         {accessories.map((item) => (
-                          <CompactCheckboxRow
+                          <OptionTile
                             key={item._id}
                             title={item.name}
-                            checked={accessoryIds.includes(item._id)}
-                            onToggle={() => toggleSelection(item._id, accessoryIds, setAccessoryIds)}
-                            priceLabel={formatCurrency(item.price)}
+                            price={item.price}
+                            selected={accessoryIds.includes(item._id)}
+                            onClick={() => toggleSelection(item._id, accessoryIds, setAccessoryIds)}
                           />
                         ))}
                       </div>
-                    </div>
-                  ) : (
-                    <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-3 text-sm text-white/65">
-                      No accessories are configured for the selected vehicle yet.
-                    </div>
-                  )}
-                </StepCard>
+                    )}
+                  </BuilderSection>
 
-                {buildComplete ? (
-                  <PriceSummary
-                    vehicle={vehicle}
-                    canopy={canopy}
-                    modules={selectedModules}
-                    accessories={selectedAccessories}
-                    totalPrice={totalPrice}
-                  />
-                ) : null}
-
-                {buildComplete ? (
-                  <QuoteForm
-                    form={quoteForm}
-                    onChange={handleFormChange}
-                    onSubmit={handleSubmit}
-                    submitting={submitting}
-                  />
-                ) : (
-                  <div className="panel rounded-[2rem] p-6 text-white/65">
-                    Complete all four steps to show pricing and unlock the quote form.
-                  </div>
-                )}
+                  <BuilderSection
+                    step="05"
+                    eyebrow="Get A Detailed Quote"
+                    title="Send the build through to your team"
+                    description="Capture the customer details and configuration on one page, similar to the reference builder flow."
+                  >
+                    {buildReady ? (
+                      <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2">
+                          <TextField
+                            label="Full name"
+                            name="name"
+                            value={quoteForm.name}
+                            onChange={handleFormChange}
+                            required
+                          />
+                          <TextField
+                            label="Email"
+                            name="email"
+                            type="email"
+                            value={quoteForm.email}
+                            onChange={handleFormChange}
+                            required
+                          />
+                          <TextField
+                            label="Phone"
+                            name="phone"
+                            value={quoteForm.phone}
+                            onChange={handleFormChange}
+                            required
+                          />
+                          <TextField
+                            label="Town / address"
+                            name="address"
+                            value={quoteForm.address}
+                            onChange={handleFormChange}
+                            required
+                          />
+                        </div>
+                        <label className="block">
+                          <span className="mb-2 block text-xs uppercase tracking-[0.24em] text-[#8a765a]">Comments</span>
+                          <textarea
+                            name="notes"
+                            rows="5"
+                            value={quoteForm.notes}
+                            onChange={handleFormChange}
+                            className="w-full rounded-[1.1rem] border border-[#e2d2b9] bg-[#fffdf9] px-4 py-3 text-[#1c1812] outline-none transition focus:border-[#c89d35]"
+                            placeholder="Tell us about intended use, fitting needs, special requirements, or anything else the team should know."
+                          />
+                        </label>
+                        <div className="flex flex-col gap-4 rounded-[1.4rem] border border-[#e2d2b9] bg-[#fbf7ef] p-4">
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.22em] text-[#8a765a]">Current estimate</p>
+                            <p className="mt-2 font-display text-3xl uppercase tracking-[0.04em] text-[#1c1812]">
+                              {formatCurrency(totalPrice)}
+                            </p>
+                          </div>
+                          <button
+                            type="submit"
+                            disabled={submitting}
+                            className="w-full rounded-full bg-[#f9bf1a] px-6 py-3 text-center text-sm font-medium uppercase tracking-[0.18em] text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-55"
+                          >
+                            {submitting ? "Sending quote..." : "Get detailed quote"}
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <EmptyState copy="Choose a vehicle platform and canopy package first, then the quote form will be ready." />
+                    )}
+                  </BuilderSection>
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </section>
@@ -379,48 +423,92 @@ export default function ConfiguratorPage() {
   );
 }
 
-const CompactOptionRow = ({ title, priceLabel, selected, onClick }) => (
+const BuilderSection = ({ step, eyebrow, title, description, children }) => (
+  <section className="rounded-[1.35rem] border border-[#dbc9ab] bg-white p-4 shadow-[0_16px_28px_rgba(72,54,29,0.06)] md:p-5">
+    <div className="flex items-start justify-between gap-3">
+      <div>
+        <p className="text-[11px] uppercase tracking-[0.3em] text-[#946d15]">{eyebrow}</p>
+        <h2 className="mt-2 font-display text-[1.3rem] uppercase tracking-[-0.02em] text-[#1c1812] md:text-[1.55rem]">
+          {title}
+        </h2>
+      </div>
+      <span className="rounded-full border border-[#ead9bc] bg-[#fbf6ed] px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-[#8a765a]">
+        Step {step}
+      </span>
+    </div>
+    <p className="mt-2 text-sm leading-6 text-[#605344]">{description}</p>
+    <div className="mt-4">{children}</div>
+  </section>
+);
+
+const SelectField = ({ label, value, onChange, options, placeholder }) => (
+  <label className="block">
+    <span className="mb-2 block text-xs uppercase tracking-[0.24em] text-[#8a765a]">{label}</span>
+    <select
+      value={value}
+      onChange={onChange}
+      className="w-full rounded-[1rem] border border-[#e2d2b9] bg-[#fffdf9] px-4 py-3 text-sm text-[#1c1812] outline-none transition focus:border-[#c89d35] focus:bg-white"
+    >
+      <option value="">{placeholder}</option>
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  </label>
+);
+
+const OptionTile = ({ title, price, selected, onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`flex w-full items-center justify-between gap-3 rounded-[1rem] border px-3 py-3 text-left transition ${
+    className={`group overflow-hidden rounded-[1.1rem] border text-left transition ${
       selected
-        ? "border-[#f9bf1a]/40 bg-[#f9bf1a]/8"
-        : "border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.05]"
+        ? "border-[#d4a332] bg-[linear-gradient(135deg,#fff8ea,#fffdf8)] shadow-[0_10px_24px_rgba(72,54,29,0.08)]"
+        : "border-[#e3d5bf] bg-[#fffdfa] hover:border-[#d4a332]/45 hover:bg-white"
     }`}
   >
-    <span className="min-w-0 font-display text-sm uppercase tracking-[0.04em] text-white md:text-base">
-      {title}
-    </span>
-    <span className="shrink-0 rounded-full border border-white/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-[#f9bf1a]">
-      {priceLabel}
-    </span>
+    <div className="p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="font-display text-[1rem] uppercase tracking-[0.03em] text-[#1c1812] sm:text-[1.05rem]">
+            {title}
+          </h3>
+          <span className="mt-2 inline-flex w-fit rounded-full border border-[#eadcc6] bg-[#fbf6ed] px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-[#946d15]">
+            {formatCurrency(price)}
+          </span>
+        </div>
+        <SelectionDot selected={selected} />
+      </div>
+    </div>
   </button>
 );
 
-const CompactCheckboxRow = ({ title, checked, onToggle, priceLabel }) => (
-  <label
-    className={`flex cursor-pointer items-start gap-3 rounded-[1rem] border p-3 transition ${
-      checked
-        ? "border-[#f9bf1a]/40 bg-[#f9bf1a]/8"
-        : "border-white/10 bg-white/[0.03]"
-    }`}
-  >
+const TextField = ({ label, name, type = "text", value, onChange, required }) => (
+  <label className="block">
+    <span className="mb-2 block text-xs uppercase tracking-[0.24em] text-[#8a765a]">{label}</span>
     <input
-      type="checkbox"
-      checked={checked}
-      onChange={onToggle}
-      className="mt-1 h-4 w-4 shrink-0 accent-[#f9bf1a]"
+      type={type}
+      name={name}
+      required={required}
+      value={value}
+      onChange={onChange}
+      className="w-full rounded-[1rem] border border-[#e2d2b9] bg-[#fffdf9] px-4 py-3 text-sm text-[#1c1812] outline-none transition focus:border-[#c89d35] focus:bg-white"
     />
-    <div className="min-w-0 flex-1">
-      <div className="flex items-start justify-between gap-3">
-        <p className="min-w-0 font-display text-sm uppercase tracking-[0.04em] text-white md:text-base">
-          {title}
-        </p>
-        <span className="shrink-0 rounded-full border border-white/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-[#f9bf1a]">
-          {priceLabel}
-        </span>
-      </div>
-    </div>
   </label>
+);
+
+const EmptyState = ({ copy }) => (
+  <div className="rounded-[1.1rem] border border-dashed border-[#d8cab5] bg-[#fbf7f1] p-4 text-sm leading-6 text-[#6b5f51]">
+    {copy}
+  </div>
+);
+
+const SelectionDot = ({ selected }) => (
+  <span
+    className={`h-5 w-5 shrink-0 rounded-full border ${
+      selected ? "border-[#d4a332] bg-[#d4a332]" : "border-[#ccbca4] bg-white"
+    }`}
+  />
 );

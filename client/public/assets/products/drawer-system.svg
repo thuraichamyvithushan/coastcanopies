@@ -1,7 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 88">
-  <rect x="6" y="10" width="128" height="66" rx="10" fill="#2b2b2b" stroke="#f9bf1a" stroke-width="3"/>
-  <rect x="16" y="22" width="48" height="34" rx="5" fill="#161616"/>
-  <rect x="76" y="22" width="48" height="34" rx="5" fill="#161616"/>
-  <circle cx="57" cy="39" r="3" fill="#f9bf1a"/>
-  <circle cx="117" cy="39" r="3" fill="#f9bf1a"/>
+  <defs>
+    <linearGradient id="drawerBody" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#565d63"/>
+      <stop offset="0.5" stop-color="#2b3035"/>
+      <stop offset="1" stop-color="#15181c"/>
+    </linearGradient>
+  </defs>
+  <rect width="140" height="88" fill="none"/>
+  <ellipse cx="70" cy="74" rx="50" ry="5" fill="#101114" opacity=".12"/>
+  <path d="M10 25h120c5 0 8 4 8 8v36c0 5-4 9-9 9H11c-5 0-9-4-9-9V33c0-4 4-8 8-8z" fill="url(#drawerBody)"/>
+  <path d="M17 31h50c5 0 8 3 8 8v25c0 4-3 7-7 7H17z" fill="#1d2125"/>
+  <path d="M75 31h48c5 0 8 3 8 8v25c0 4-3 7-7 7H75z" fill="#20252a"/>
+  <path d="M21 47h16M88 47h16" stroke="#c2c7cb" stroke-width="3" stroke-linecap="round"/>
+  <path d="M14 23h112" stroke="#f2c453" stroke-width="3" stroke-linecap="round" opacity=".9"/>
+  <path d="M18 69h104" stroke="#15181b" stroke-width="4" stroke-linecap="round"/>
 </svg>
