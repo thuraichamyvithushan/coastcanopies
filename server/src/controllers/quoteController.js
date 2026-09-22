@@ -1,9 +1,16 @@
+import mongoose from "mongoose";
 import { Product } from "../models/Product.js";
 import { Quote } from "../models/Quote.js";
 import { Vehicle } from "../models/Vehicle.js";
 import { sendQuoteNotification } from "../utils/mailer.js";
 import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+
+const premiumPackage = {
+  id: "premium-canopy-package",
+  name: "Premium Canopy Package",
+  price: 32500
+};
 
 const snapshotItem = (item) => ({
   referenceId: item._id,
@@ -14,17 +21,18 @@ const snapshotItem = (item) => ({
 });
 
 const validateCustomerInfo = (customerInfo) => {
-  const { name, email, phone, address } = customerInfo || {};
+  const { name, email, phone, address, reference } = customerInfo || {};
 
-  if (!name || !email || !phone || !address) {
-    throw new ApiError(400, "Customer info requires name, email, phone, and address");
+  if (!name || !email || !phone) {
+    throw new ApiError(400, "Customer info requires name, email, and phone");
   }
 
   return {
     name: name.trim(),
     email: email.trim().toLowerCase(),
     phone: phone.trim(),
-    address: address.trim(),
+    address: address?.trim() || "",
+    reference: reference?.trim() || "",
     notes: customerInfo.notes?.trim() || ""
   };
 };
@@ -33,7 +41,64 @@ const productSupportsVehicle = (product, vehicleSlug) =>
   product?.positions?.some((position) => position.vehicleSlug === vehicleSlug);
 
 export const createQuote = asyncHandler(async (req, res) => {
-  const { vehicleId, baseSystemId, moduleIds = [], accessoryIds = [], customerInfo } = req.body;
+  const {
+    packageId,
+    selectedOptionalExtraIds = [],
+    vehicleId,
+    baseSystemId,
+    moduleIds = [],
+    accessoryIds = [],
+    customerInfo
+  } = req.body;
+
+  if (packageId === premiumPackage.id) {
+    if (!Array.isArray(selectedOptionalExtraIds)) {
+      throw new ApiError(400, "Selected products must be an array");
+    }
+
+    const extraIds = Array.from(new Set(selectedOptionalExtraIds));
+
+    if (extraIds.some((id) => !mongoose.isValidObjectId(id))) {
+      throw new ApiError(400, "One or more selected products are invalid");
+    }
+
+    const selectedExtras = extraIds.length
+      ? await Product.find({ _id: { $in: extraIds } })
+      : [];
+
+    if (selectedExtras.length !== extraIds.length) {
+      throw new ApiError(400, "One or more selected products were not found");
+    }
+
+    const selectedModules = selectedExtras.filter((item) => item.type === "module");
+    const selectedAccessories = selectedExtras.filter((item) => item.type !== "module");
+    const optionalExtrasTotal = selectedExtras.reduce((total, item) => total + item.price, 0);
+    const quote = await Quote.create({
+      vehicle: {
+        name: "Coast Canopies Base Vehicle",
+        slug: "base-vehicle",
+        price: 0,
+        svg: ""
+      },
+      baseSystem: {
+        name: premiumPackage.name,
+        slug: premiumPackage.id,
+        price: premiumPackage.price,
+        svg: ""
+      },
+      modules: selectedModules.map(snapshotItem),
+      accessories: selectedAccessories.map(snapshotItem),
+      totalPrice: premiumPackage.price + optionalExtrasTotal,
+      customerInfo: validateCustomerInfo(customerInfo)
+    });
+
+    await sendQuoteNotification(quote).catch(() => false);
+
+    return res.status(201).json({
+      message: "Quote request submitted successfully",
+      quoteId: quote._id
+    });
+  }
 
   if (!vehicleId || !baseSystemId) {
     throw new ApiError(400, "Vehicle and base system are required");

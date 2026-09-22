@@ -26,8 +26,8 @@ const sanitizeVector3 = (value, fallback, fieldName) => {
 const sanitizeVehiclePayload = (payload) => {
   const { name, slug, brand, svgBase, modelUrl, modelScale, modelPosition, modelRotation, price, canvasSize } = payload;
 
-  if (!name || !slug || !brand || !svgBase || price === undefined) {
-    throw new ApiError(400, "Vehicle requires name, slug, brand, svgBase, and price");
+  if (!name || !slug || !brand || price === undefined) {
+    throw new ApiError(400, "Vehicle requires name, slug, brand, and price");
   }
 
   if (!canvasSize?.width || !canvasSize?.height) {
@@ -38,7 +38,7 @@ const sanitizeVehiclePayload = (payload) => {
     name: name.trim(),
     slug: slug.trim(),
     brand: brand.trim(),
-    svgBase: svgBase.trim(),
+    svgBase: String(svgBase || "").trim(),
     modelUrl: String(modelUrl || "").trim(),
     modelScale: sanitizeVector3(modelScale, defaultVector3(1, 1, 1), "modelScale"),
     modelPosition: sanitizeVector3(modelPosition, defaultVector3(0, 0, 0), "modelPosition"),

@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 const navLinkClass = ({ isActive }) =>
@@ -21,13 +21,21 @@ export const AdminLayout = ({ title, description, children }) => {
             </div>
             <div className="text-sm text-white/60">
               <p>Signed in as {auth?.admin?.email}</p>
-              <button
-                type="button"
-                onClick={logout}
-                className="mt-3 rounded-full border border-white/15 px-4 py-2 uppercase tracking-[0.25em] text-white transition hover:border-[#f9bf1a] hover:text-[#f9bf1a]"
-              >
-                Log Out
-              </button>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link
+                  to="/"
+                  className="rounded-full border border-white/15 px-4 py-2 uppercase tracking-[0.25em] text-white transition hover:border-[#f9bf1a] hover:text-[#f9bf1a]"
+                >
+                  View Site
+                </Link>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="rounded-full border border-white/15 px-4 py-2 uppercase tracking-[0.25em] text-white transition hover:border-[#f9bf1a] hover:text-[#f9bf1a]"
+                >
+                  Log Out
+                </button>
+              </div>
             </div>
           </div>
           <nav className="mt-8 flex flex-wrap gap-3">

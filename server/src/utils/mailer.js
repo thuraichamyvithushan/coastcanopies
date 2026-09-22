@@ -36,8 +36,10 @@ export const sendQuoteNotification = async (quote) => {
       `Customer: ${quote.customerInfo.name}`,
       `Email: ${quote.customerInfo.email}`,
       `Phone: ${quote.customerInfo.phone}`,
+      `Quote / Reference: ${quote.customerInfo.reference || "None"}`,
       `Vehicle: ${quote.vehicle.name}`,
       `Base System: ${quote.baseSystem.name}`,
+      `Selected Products: ${[...quote.modules, ...quote.accessories].map((item) => item.name).join(", ") || "None"}`,
       `Total: $${quote.totalPrice.toLocaleString()}`,
       `Notes: ${quote.customerInfo.notes || "None"}`
     ].join("\n")

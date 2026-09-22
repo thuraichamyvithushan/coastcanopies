@@ -4,7 +4,7 @@ const quoteItemSchema = new mongoose.Schema(
   {
     referenceId: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true
+      default: null
     },
     name: {
       type: String,
@@ -66,7 +66,11 @@ const quoteSchema = new mongoose.Schema(
       },
       address: {
         type: String,
-        required: true
+        default: ""
+      },
+      reference: {
+        type: String,
+        default: ""
       },
       notes: {
         type: String,

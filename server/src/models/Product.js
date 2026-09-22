@@ -1,5 +1,25 @@
 import mongoose from "mongoose";
 
+const vector3Schema = new mongoose.Schema(
+  {
+    x: {
+      type: Number,
+      required: true
+    },
+    y: {
+      type: Number,
+      required: true
+    },
+    z: {
+      type: Number,
+      required: true
+    }
+  },
+  {
+    _id: false
+  }
+);
+
 const productPositionSchema = new mongoose.Schema(
   {
     vehicleSlug: {
@@ -49,8 +69,25 @@ const productSchema = new mongoose.Schema(
     },
     svg: {
       type: String,
-      required: true,
+      default: "",
       trim: true
+    },
+    modelUrl: {
+      type: String,
+      default: "",
+      trim: true
+    },
+    modelScale: {
+      type: vector3Schema,
+      default: () => ({ x: 1, y: 1, z: 1 })
+    },
+    modelPosition: {
+      type: vector3Schema,
+      default: () => ({ x: 0, y: 0, z: 0 })
+    },
+    modelRotation: {
+      type: vector3Schema,
+      default: () => ({ x: 0, y: 0, z: 0 })
     },
     price: {
       type: Number,

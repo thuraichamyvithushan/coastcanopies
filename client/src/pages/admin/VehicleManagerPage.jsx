@@ -3,7 +3,7 @@ import {
   createVehicle,
   deleteVehicle,
   fetchVehicles,
-  uploadVehicleAsset,
+  uploadModelAsset,
   updateVehicle
 } from "../../api/admin.js";
 import { AdminLayout } from "../../components/admin/AdminLayout.jsx";
@@ -14,13 +14,17 @@ const initialForm = {
   name: "",
   slug: "",
   brand: "",
-  svgBase: "/assets/vehicles/new-vehicle.svg",
+  svgBase: "",
+  modelUrl: "",
+  modelScale: '{\n  "x": 1,\n  "y": 1,\n  "z": 1\n}',
+  modelPosition: '{\n  "x": 0,\n  "y": 0,\n  "z": 0\n}',
+  modelRotation: '{\n  "x": 0,\n  "y": 0,\n  "z": 0\n}',
   price: "0",
   canvasSize: '{\n  "width": 1000,\n  "height": 600\n}'
 };
 
 const initialSelectedFiles = {
-  svgFile: null
+  modelFile: null
 };
 
 export default function VehicleManagerPage() {
@@ -67,7 +71,11 @@ export default function VehicleManagerPage() {
       name: vehicle.name,
       slug: vehicle.slug,
       brand: vehicle.brand,
-      svgBase: vehicle.svgBase,
+      svgBase: vehicle.svgBase || "",
+      modelUrl: vehicle.modelUrl || "",
+      modelScale: JSON.stringify(vehicle.modelScale || { x: 1, y: 1, z: 1 }, null, 2),
+      modelPosition: JSON.stringify(vehicle.modelPosition || { x: 0, y: 0, z: 0 }, null, 2),
+      modelRotation: JSON.stringify(vehicle.modelRotation || { x: 0, y: 0, z: 0 }, null, 2),
       price: String(vehicle.price),
       canvasSize: JSON.stringify(vehicle.canvasSize, null, 2)
     });
@@ -87,17 +95,20 @@ export default function VehicleManagerPage() {
 
     try {
       const vehicleSlug = form.slug.trim();
-      const svgBase = selectedFiles.svgFile
-        ? await uploadSelectedAsset(auth.token, {
-            assetType: "vehicle-svg",
-            file: selectedFiles.svgFile,
+      const modelUrl = selectedFiles.modelFile
+        ? (await uploadModelAsset(auth.token, {
+            assetType: "model",
+            file: selectedFiles.modelFile,
             slug: vehicleSlug
-          })
-        : form.svgBase || `/assets/vehicles/${vehicleSlug}-base.svg`;
+          })).path
+        : form.modelUrl;
 
       const payload = {
         ...form,
-        svgBase,
+        modelUrl,
+        modelScale: JSON.parse(form.modelScale),
+        modelPosition: JSON.parse(form.modelPosition),
+        modelRotation: JSON.parse(form.modelRotation),
         price: Number(form.price),
         canvasSize: JSON.parse(form.canvasSize)
       };
@@ -132,7 +143,7 @@ export default function VehicleManagerPage() {
   return (
     <AdminLayout
       title="Vehicle Manager"
-      description="Maintain available vehicle platforms and 2D vector layout presets that power the configurator preview."
+      description="Maintain vehicle platforms, GLB 3D models, and configurator alignment settings."
     >
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
         <form onSubmit={handleSubmit} className="panel rounded-[2rem] p-6">
@@ -144,22 +155,38 @@ export default function VehicleManagerPage() {
             <Field label="Slug" name="slug" value={form.slug} onChange={handleChange} />
             <Field label="Brand" name="brand" value={form.brand} onChange={handleChange} />
             <FileField
-              label="2D Base Image File"
-              name="svgFile"
-              accept=".svg,.png,.jpg,.jpeg,image/svg+xml,image/png,image/jpeg"
+              label="3D Vehicle Model"
+              name="modelFile"
+              accept=".glb,model/gltf-binary,application/octet-stream"
               onChange={handleFileChange}
               hint={
-                selectedFiles.svgFile
-                  ? `Selected: ${selectedFiles.svgFile.name}`
-                  : "Choose an SVG, PNG, or JPG file for the vehicle side profile."
+                selectedFiles.modelFile
+                  ? `Selected: ${selectedFiles.modelFile.name}`
+                  : editingId && form.modelUrl
+                    ? "A 3D model is attached. Choose a GLB file only to replace it."
+                    : "Optional: choose a self-contained GLB model for the live 3D builder."
               }
             />
-            <Field
-              label="Base Image Path"
-              name="svgBase"
-              value={form.svgBase}
+            <JsonTextAreaField
+              label="3D Scale JSON"
+              name="modelScale"
+              value={form.modelScale}
               onChange={handleChange}
-              placeholder="/assets/vehicles/toyota-hilux-base.svg"
+              hint='Model scale. Example: { "x": 1, "y": 1, "z": 1 }'
+            />
+            <JsonTextAreaField
+              label="3D Position JSON"
+              name="modelPosition"
+              value={form.modelPosition}
+              onChange={handleChange}
+              hint='Position relative to the builder scene. Example: { "x": 0, "y": 0, "z": 0 }'
+            />
+            <JsonTextAreaField
+              label="3D Rotation JSON (degrees)"
+              name="modelRotation"
+              value={form.modelRotation}
+              onChange={handleChange}
+              hint='Rotation uses degrees. Example: { "x": 0, "y": 90, "z": 0 }'
             />
             <Field label="Price" name="price" type="number" value={form.price} onChange={handleChange} />
             <JsonTextAreaField
@@ -202,7 +229,7 @@ export default function VehicleManagerPage() {
                       {vehicle.brand} • {vehicle.slug}
                     </p>
                     <p className="mt-2 text-sm text-white/45">
-                      {vehicle.svgBase ? "2D base artwork attached" : "2D artwork fallback"}
+                      {vehicle.modelUrl ? "3D model attached" : "Procedural 3D fallback"}
                     </p>
                   </div>
                   <div className="flex gap-3">
@@ -230,27 +257,6 @@ export default function VehicleManagerPage() {
     </AdminLayout>
   );
 }
-
-const readFileAsDataUrl = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error(`Failed to read ${file.name}`));
-    reader.readAsDataURL(file);
-  });
-
-const uploadSelectedAsset = async (token, { assetType, file, slug }) => {
-  const dataUrl = await readFileAsDataUrl(file);
-  const response = await uploadVehicleAsset(token, {
-    assetType,
-    slug,
-    fileName: file.name,
-    dataUrl
-  });
-
-  return response.path;
-};
 
 const Field = ({ label, name, value, onChange, type = "text", placeholder, required = true }) => (
   <label className="block">

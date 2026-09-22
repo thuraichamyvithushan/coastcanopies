@@ -1,218 +1,114 @@
 import { Link } from "react-router-dom";
-import { SectionHeading } from "../components/common/SectionHeading.jsx";
 import { SiteShell } from "../components/layout/SiteShell.jsx";
 
-const steps = [
-  "Pick the ute platform that matches your build.",
-  "Choose the canopy architecture and tray package.",
-  "Layer premium touring modules and hardware.",
-  "Review the live visual and send the workshop brief."
-];
-
-const metrics = [
-  { value: "4", label: "Vehicle platforms" },
-  { value: "12", label: "Factory-ready options" },
-  { value: "1", label: "Luxury builder flow" }
-];
-
-const featureCards = [
-  {
-    title: "Live SVG Visuals",
-    copy: "A clean layered side-profile view lets customers understand proportion, fitment, and upgrade placement immediately."
-  },
-  {
-    title: "Instant Price Engine",
-    copy: "Every canopy, module, and accessory updates the running estimate in real time for a clear premium-buying experience."
-  },
-  {
-    title: "Workshop-Ready Data",
-    copy: "Each submission lands with full configuration detail so your team can move from enquiry to quote with less back-and-forth."
-  }
-];
-
-const pillars = [
-  {
-    eyebrow: "Material Language",
-    title: "Industrial surfaces, luxury pacing",
-    copy: "The interface now blends deep graphite panels, brushed light sections, and gold illumination to feel more like a premium vehicle brand than a plain builder."
-  },
-  {
-    eyebrow: "Conversion Flow",
-    title: "Designed to move customers forward",
-    copy: "Every section builds confidence first, then invites action, making the configurator feel aspirational instead of purely functional."
-  }
-];
-
-const showcasePoints = [
-  "Premium black and gold visual language",
-  "Champagne detail surfaces for contrast",
-  "Faster path from discovery to quote"
+const benefits = [
+  { number: "01", title: "Engineered fit", copy: "Vehicle-specific systems designed around the way you tour, work and carry." },
+  { number: "02", title: "Premium finish", copy: "Powder-coated aluminium, precise hardware and a clean, durable visual language." },
+  { number: "03", title: "Built your way", copy: "Choose your platform, canopy and accessories in one guided online builder." }
 ];
 
 export default function HomePage() {
   return (
     <SiteShell>
-      <section className="relative overflow-hidden bg-[linear-gradient(180deg,#1d1d1d_0%,#181818_100%)] px-6 pb-24 pt-16 md:pb-32 md:pt-24">
-        <div className="absolute inset-0 bg-grid bg-[size:24px_24px] opacity-[0.12]" />
-        <div className="absolute -left-24 top-24 h-72 w-72 rounded-full bg-[#f9bf1a]/12 blur-3xl" />
-        <div className="absolute right-0 top-0 h-[32rem] w-[32rem] rounded-full bg-white/5 blur-3xl" />
-        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
-          <div className="relative z-10">
-            <p className="font-display text-sm uppercase tracking-[0.6em] text-[#f9bf1a]">Premium Fit-Out Builder</p>
-            <h1 className="mt-6 max-w-5xl font-display text-6xl leading-[0.88] tracking-[-0.05em] text-[#fff9ee] md:text-8xl">
-              Golden premium presence for modern canopy builds.
+      <section className="relative min-h-[calc(100vh-73px)] overflow-hidden bg-[#111] text-white">
+        <img
+          src="/assets/generated/coastal-canopy-hero.png"
+          alt="Premium canopy-equipped touring vehicle overlooking the coast"
+          className="absolute inset-0 h-full w-full object-cover object-[68%_center]"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,8,8,0.96)_0%,rgba(8,8,8,0.76)_37%,rgba(8,8,8,0.18)_72%,rgba(8,8,8,0.08)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(8,8,8,0.82)_0%,transparent_40%)]" />
+        <div className="relative mx-auto flex min-h-[calc(100vh-73px)] max-w-7xl items-center px-6 py-20">
+          <div className="max-w-3xl">
+            <p className="text-xs uppercase tracking-[0.45em] text-[#f9bf1a]">Australian touring systems</p>
+            <h1 className="mt-6 font-display text-5xl uppercase leading-[0.9] tracking-[-0.045em] sm:text-7xl lg:text-[6.5rem]">
+              Carry more.<br />Go further.
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-[#f7f0df]/80">
-              Coast Canopies now leads with polished contrast, metallic warmth, and a more cinematic landing
-              experience that sells the quality of the build before a customer even opens the configurator.
+            <p className="mt-7 max-w-xl text-base leading-7 text-white/72 sm:text-lg">
+              Premium canopy systems built for hard work, long weekends and the roads that begin where the bitumen ends.
             </p>
-            <div className="mt-10 flex flex-wrap gap-4">
+            <div className="mt-9 flex flex-wrap gap-4">
               <Link
                 to="/configurator"
-                className="rounded-full bg-[#f9bf1a] px-7 py-3 font-medium text-black shadow-[0_16px_48px_rgba(249,191,26,0.36)] transition hover:-translate-y-0.5 hover:opacity-90"
+                className="rounded-full bg-[#f9bf1a] px-7 py-3.5 text-sm font-semibold uppercase tracking-[0.16em] text-black transition hover:-translate-y-0.5 hover:bg-[#ffd04a]"
               >
-                Start Configuring
+                Build your canopy
               </Link>
-            </div>
-
-            <div className="mt-12 grid gap-4 sm:grid-cols-3">
-              {metrics.map((item) => (
-                <div
-                  key={item.label}
-                  className="gold-outline rounded-[1.7rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.11),rgba(255,255,255,0.04))] p-5 backdrop-blur-xl"
-                >
-                  <p className="font-display text-4xl tracking-[-0.05em] text-[#f9bf1a]">{item.value}</p>
-                  <p className="mt-2 text-sm uppercase tracking-[0.24em] text-white/60">{item.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="relative z-10">
-            <div className="absolute -inset-6 rounded-[3rem] bg-[radial-gradient(circle_at_top,_rgba(249,191,26,0.34),_transparent_58%)] blur-2xl" />
-            <div className="gold-surface gold-outline relative overflow-hidden rounded-[2.8rem] p-8">
-              <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[#fff1cb]/75 to-transparent" />
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-display text-sm uppercase tracking-[0.45em] text-[#f9bf1a]">Configurator Flow</p>
-                  <h2 className="mt-3 font-display text-4xl tracking-[-0.05em] text-white">From platform to quote</h2>
-                </div>
-                <div className="rounded-full border border-[#f9bf1a]/18 bg-[#fff4cf]/10 px-4 py-2 text-xs uppercase tracking-[0.28em] text-[#f3e7c2]">
-                  Signature Spec
-                </div>
-              </div>
-              <div className="mt-8 grid gap-4 rounded-[2rem] border border-[#f9bf1a]/14 bg-[linear-gradient(180deg,rgba(255,248,229,0.12),rgba(255,255,255,0.02))] p-5 sm:grid-cols-3">
-                {showcasePoints.map((item) => (
-                  <div key={item} className="rounded-[1.3rem] border border-white/8 bg-black/14 p-4">
-                    <div className="h-1.5 w-12 rounded-full bg-[#f9bf1a]" />
-                    <p className="mt-4 text-sm leading-6 text-[#f5ecd4]/82">{item}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-8 space-y-4">
-                {steps.map((item, index) => (
-                  <div
-                    key={item}
-                    className="group flex gap-4 rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.03))] p-4 transition hover:border-[#f9bf1a]/30 hover:bg-[linear-gradient(180deg,rgba(249,191,26,0.14),rgba(255,255,255,0.04))]"
-                  >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#f9bf1a] font-display text-lg text-black shadow-[0_12px_24px_rgba(249,191,26,0.28)]">
-                      0{index + 1}
-                    </span>
-                    <p className="pt-2 text-white/78 transition group-hover:text-white">{item}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-8 rounded-[1.8rem] border border-[#f9bf1a]/18 bg-[linear-gradient(145deg,rgba(249,191,26,0.18),rgba(255,255,255,0.03))] p-5">
-                <p className="text-sm uppercase tracking-[0.28em] text-[#f9bf1a]">Signature Finish</p>
-                <p className="mt-3 max-w-md text-white/72">
-                  Gold edge-lighting and brushed neutral surfaces keep the page elevated while the darker base
-                  still anchors it in the Coast Canopies workshop world.
-                </p>
-              </div>
+              <a
+                href="#systems"
+                className="rounded-full border border-white/30 bg-black/20 px-7 py-3.5 text-sm uppercase tracking-[0.16em] text-white backdrop-blur transition hover:border-white"
+              >
+                Explore systems
+              </a>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-[linear-gradient(180deg,#181818_0%,#151515_100%)] px-6 py-20 text-white">
+      <section className="bg-[#f3eee5] px-6 py-20 text-[#1d1a15] md:py-28">
         <div className="mx-auto max-w-7xl">
-          <SectionHeading
-            eyebrow="Why It Works"
-            title="Builder-first experience with a premium showroom tone"
-            description="The page now balances aspiration and practicality, presenting the configurator like a higher-end automotive product instead of a flat utility form."
-            theme="dark"
-          />
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {featureCards.map((item) => (
-              <article
-                key={item.title}
-                className="panel rounded-[2rem] p-6"
-              >
-                <div className="mb-5 h-1.5 w-16 rounded-full bg-[#f9bf1a]" />
-                <h3 className="font-display text-3xl tracking-[-0.04em] text-white">{item.title}</h3>
-                <p className="mt-4 text-white/72">{item.copy}</p>
+          <div className="grid gap-6 md:grid-cols-3">
+            {benefits.map((benefit) => (
+              <article key={benefit.number} className="border-t border-[#cdbd9f] pt-5">
+                <p className="text-xs tracking-[0.3em] text-[#98711b]">{benefit.number}</p>
+                <h2 className="mt-5 font-display text-3xl uppercase tracking-[-0.02em]">{benefit.title}</h2>
+                <p className="mt-3 max-w-sm leading-7 text-[#62594d]">{benefit.copy}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-[linear-gradient(180deg,#171717_0%,#141414_100%)] px-6 py-20">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#f9bf1a]/40 to-transparent" />
-        <div className="absolute left-1/2 top-16 h-64 w-64 -translate-x-1/2 rounded-full bg-[#f9bf1a]/8 blur-3xl" />
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="gold-surface gold-outline relative overflow-hidden rounded-[2.6rem] p-8">
-            <div className="mb-6 h-48 w-full overflow-hidden rounded-[1.8rem] border border-[#f9bf1a]/20">
-              <img
-                src="/assets/generated/premium-canopy-showcase.png"
-                alt="Coast Canopies Signature Build Showcase"
-                className="h-full w-full object-cover transition duration-500 hover:scale-105"
-              />
-            </div>
-            <p className="font-display text-sm uppercase tracking-[0.5em] text-[#f9bf1a]">Visual Direction</p>
-            <h2 className="mt-3 max-w-lg font-display text-4xl leading-[0.95] tracking-[-0.05em] text-white">
-              More premium glow, less generic dark UI.
+      <section id="systems" className="overflow-hidden bg-[#151515] px-6 py-20 text-white md:py-28">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+          <div className="relative">
+            <div className="absolute -inset-5 rounded-[2.5rem] bg-[#f9bf1a]/10 blur-2xl" />
+            <img
+              src="/assets/generated/canopy-storage-detail.png"
+              alt="Open canopy with organized drawer and touring storage system"
+              loading="lazy"
+              className="relative aspect-[4/3] w-full rounded-[2rem] object-cover shadow-2xl"
+            />
+          </div>
+          <div className="lg:pl-8">
+            <p className="text-xs uppercase tracking-[0.42em] text-[#f9bf1a]">Inside the system</p>
+            <h2 className="mt-5 font-display text-4xl uppercase leading-[0.95] tracking-[-0.035em] sm:text-6xl">
+              Every millimetre earns its place.
             </h2>
-            <p className="mt-4 max-w-xl text-white/68">
-              The new page leans into a black, champagne, and gold palette with warmer depth and cleaner composition,
-              giving Coast Canopies a sharper luxury identity.
+            <p className="mt-6 max-w-xl text-lg leading-8 text-white/62">
+              Drawer storage, fridge slides, water systems and touring modules combine into one considered setup. Configure only what you need and see the estimate update as you build.
             </p>
-            <Link
-              to="/configurator"
-              className="mt-6 inline-flex rounded-full border border-[#f9bf1a]/35 px-6 py-3 text-white transition hover:bg-[#f9bf1a] hover:text-black"
-            >
-              Explore the Builder
+            <Link to="/configurator" className="mt-8 inline-flex items-center gap-3 text-sm uppercase tracking-[0.22em] text-[#f9bf1a]">
+              Open the builder <span aria-hidden="true">→</span>
             </Link>
           </div>
+        </div>
+      </section>
 
-          <div className="grid gap-6 md:grid-cols-2">
-            {pillars.map((item) => (
-              <article
-                key={item.title}
-                className="gold-outline rounded-[2.2rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] p-6"
-              >
-                <p className="text-sm uppercase tracking-[0.28em] text-[#f9bf1a]">{item.eyebrow}</p>
-                <h3 className="mt-4 font-display text-3xl leading-tight tracking-[-0.04em] text-white">
-                  {item.title}
-                </h3>
-                <p className="mt-4 text-white/64">{item.copy}</p>
-              </article>
-            ))}
-            <article className="rounded-[2.3rem] border border-[#f9bf1a]/18 bg-[linear-gradient(145deg,rgba(255,255,255,0.07),rgba(249,191,26,0.12))] p-6 shadow-[0_18px_50px_rgba(0,0,0,0.22)] md:col-span-2">
-              <p className="text-sm uppercase tracking-[0.28em] text-[#f9bf1a]">Ready To Build</p>
-              <h3 className="mt-4 max-w-2xl font-display text-4xl leading-tight tracking-[-0.05em] text-white">
-                Launch a richer customer journey with a builder that already feels premium.
-              </h3>
-              <div className="mt-6 flex flex-wrap gap-4">
-                <Link
-                  to="/configurator"
-                  className="rounded-full bg-[#222222] px-6 py-3 text-white transition hover:bg-[#2a2a2a]"
-                >
-                  Launch Configurator
-                </Link>
-              </div>
-            </article>
+      <section className="bg-[#f3eee5] px-6 py-20 text-[#1d1a15] md:py-28">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.42em] text-[#98711b]">Made for escape</p>
+              <h2 className="mt-4 max-w-3xl font-display text-4xl uppercase leading-[0.96] tracking-[-0.035em] sm:text-6xl">
+                From workshop precision to open-country freedom.
+              </h2>
+            </div>
+            <p className="max-w-sm leading-7 text-[#62594d]">A durable setup should disappear into the journey—simple to use, secure on the road and ready when camp goes up.</p>
+          </div>
+          <div className="relative overflow-hidden rounded-[2rem]">
+            <img
+              src="/assets/generated/coastal-camp-lifestyle.png"
+              alt="Canopy-equipped touring vehicle at a quiet coastal campsite"
+              loading="lazy"
+              className="aspect-[16/8] min-h-[420px] w-full object-cover object-center"
+            />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-7 pt-24 text-white md:p-10 md:pt-32">
+              <p className="max-w-xl font-display text-2xl uppercase tracking-[0.04em] md:text-4xl">Your next setup starts here.</p>
+              <Link to="/configurator" className="mt-5 inline-flex rounded-full bg-[#f9bf1a] px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-black">
+                Configure now
+              </Link>
+            </div>
           </div>
         </div>
       </section>

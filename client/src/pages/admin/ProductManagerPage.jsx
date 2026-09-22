@@ -3,7 +3,7 @@ import {
   createProduct,
   deleteProduct,
   fetchProducts,
-  uploadVehicleAsset,
+  uploadModelAsset,
   updateProduct
 } from "../../api/admin.js";
 import { AdminLayout } from "../../components/admin/AdminLayout.jsx";
@@ -15,6 +15,10 @@ const initialForm = {
   slug: "",
   type: "canopy",
   svg: "",
+  modelUrl: "",
+  modelScale: '{\n  "x": 1,\n  "y": 1,\n  "z": 1\n}',
+  modelPosition: '{\n  "x": 0,\n  "y": 0,\n  "z": 0\n}',
+  modelRotation: '{\n  "x": 0,\n  "y": 0,\n  "z": 0\n}',
   price: "0",
   description: "",
   positions:
@@ -22,7 +26,7 @@ const initialForm = {
 };
 
 const initialSelectedFiles = {
-  productSvgFile: null
+  productModelFile: null
 };
 
 export default function ProductManagerPage() {
@@ -70,6 +74,10 @@ export default function ProductManagerPage() {
       slug: product.slug,
       type: product.type,
       svg: product.svg,
+      modelUrl: product.modelUrl || "",
+      modelScale: JSON.stringify(product.modelScale || { x: 1, y: 1, z: 1 }, null, 2),
+      modelPosition: JSON.stringify(product.modelPosition || { x: 0, y: 0, z: 0 }, null, 2),
+      modelRotation: JSON.stringify(product.modelRotation || { x: 0, y: 0, z: 0 }, null, 2),
       price: String(product.price),
       description: product.description || "",
       positions: JSON.stringify(product.positions, null, 2)
@@ -89,17 +97,20 @@ export default function ProductManagerPage() {
     setIsSubmitting(true);
 
     try {
-      const svg = selectedFiles.productSvgFile
-        ? await uploadSelectedAsset(auth.token, {
-            assetType: "product-svg",
-            file: selectedFiles.productSvgFile,
+      const modelUrl = selectedFiles.productModelFile
+        ? (await uploadModelAsset(auth.token, {
+            assetType: "product-model",
+            file: selectedFiles.productModelFile,
             slug: form.slug.trim()
-          })
-        : form.svg;
+          })).path
+        : form.modelUrl;
 
       const payload = {
         ...form,
-        svg,
+        modelUrl,
+        modelScale: JSON.parse(form.modelScale),
+        modelPosition: JSON.parse(form.modelPosition),
+        modelRotation: JSON.parse(form.modelRotation),
         price: Number(form.price),
         positions: JSON.parse(form.positions)
       };
@@ -134,7 +145,7 @@ export default function ProductManagerPage() {
   return (
     <AdminLayout
       title="Product Manager"
-      description="Control the canopy catalog and per-vehicle placement metadata. Product positions also determine which vehicles can use each item."
+      description="Control GLB 3D models, pricing, and per-vehicle compatibility."
     >
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <form onSubmit={handleSubmit} className="panel rounded-[2rem] p-6">
@@ -158,18 +169,38 @@ export default function ProductManagerPage() {
               </select>
             </label>
             <FileField
-              label="Product Image File"
-              name="productSvgFile"
-              accept=".svg,.png,.jpg,.jpeg,image/svg+xml,image/png,image/jpeg"
+              label="3D Product Model"
+              name="productModelFile"
+              accept=".glb,model/gltf-binary,application/octet-stream"
               onChange={handleFileChange}
-              required={!editingId && !form.svg}
               hint={
-                selectedFiles.productSvgFile
-                  ? `Selected: ${selectedFiles.productSvgFile.name}`
-                  : editingId
-                    ? "Choose a new SVG, PNG, or JPG only if you want to replace the current product artwork."
-                    : "Choose an SVG, PNG, or JPG from your folder."
+                selectedFiles.productModelFile
+                  ? `Selected: ${selectedFiles.productModelFile.name}`
+                  : editingId && form.modelUrl
+                    ? "A 3D model is attached. Choose a GLB file only to replace it."
+                    : "Optional: choose a self-contained GLB model for the live 3D configurator."
               }
+            />
+            <JsonTextAreaField
+              label="3D Scale JSON"
+              name="modelScale"
+              value={form.modelScale}
+              onChange={handleChange}
+              hint='Model scale. Example: { "x": 1, "y": 1, "z": 1 }'
+            />
+            <JsonTextAreaField
+              label="3D Position JSON"
+              name="modelPosition"
+              value={form.modelPosition}
+              onChange={handleChange}
+              hint='Position the product relative to the vehicle. Example: { "x": 1.1, "y": 1.4, "z": 0 }'
+            />
+            <JsonTextAreaField
+              label="3D Rotation JSON (degrees)"
+              name="modelRotation"
+              value={form.modelRotation}
+              onChange={handleChange}
+              hint='Rotation uses degrees. Example: { "x": 0, "y": 90, "z": 0 }'
             />
             <Field label="Price" name="price" type="number" value={form.price} onChange={handleChange} />
             <label className="block">
@@ -220,6 +251,9 @@ export default function ProductManagerPage() {
                     <h3 className="font-display text-2xl uppercase tracking-[0.06em] text-white">{product.name}</h3>
                     <p className="mt-2 text-sm uppercase tracking-[0.25em] text-[#f9bf1a]">{product.type}</p>
                     <p className="mt-2 text-sm text-white/55">{product.description}</p>
+                    <p className="mt-2 text-xs uppercase tracking-[0.18em] text-white/40">
+                      {product.modelUrl ? "3D model attached" : "Procedural 3D fallback"}
+                    </p>
                   </div>
                   <div className="flex gap-3">
                     <button
@@ -247,46 +281,25 @@ export default function ProductManagerPage() {
   );
 }
 
-const readFileAsDataUrl = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error(`Failed to read ${file.name}`));
-    reader.readAsDataURL(file);
-  });
-
-const uploadSelectedAsset = async (token, { assetType, file, slug }) => {
-  const dataUrl = await readFileAsDataUrl(file);
-  const response = await uploadVehicleAsset(token, {
-    assetType,
-    slug,
-    fileName: file.name,
-    dataUrl
-  });
-
-  return response.path;
-};
-
-const Field = ({ label, name, value, onChange, type = "text" }) => (
+const Field = ({ label, name, value, onChange, type = "text", placeholder, required = true }) => (
   <label className="block">
     <span className="mb-2 block text-sm uppercase tracking-[0.25em] text-white/55">{label}</span>
     <input
-      required
+      required={required}
       name={name}
       type={type}
       value={value}
       onChange={onChange}
+      placeholder={placeholder}
       className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none transition focus:border-[#f9bf1a]"
     />
   </label>
 );
 
-const FileField = ({ label, name, accept, onChange, required = false, hint }) => (
+const FileField = ({ label, name, accept, onChange, hint }) => (
   <label className="block">
     <span className="mb-2 block text-sm uppercase tracking-[0.25em] text-white/55">{label}</span>
     <input
-      required={required}
       name={name}
       type="file"
       accept={accept}

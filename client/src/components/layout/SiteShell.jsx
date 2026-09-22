@@ -1,5 +1,1 @@
-export const SiteShell = ({ children }) => (
-  <div className="min-h-screen">
-    <main>{children}</main>
-  </div>
-);
+export const SiteShell = ({ children }) => <main className="min-h-screen">{children}</main>;

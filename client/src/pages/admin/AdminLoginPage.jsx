@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginAdmin } from "../../api/admin.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 
@@ -65,6 +65,9 @@ export default function AdminLoginPage() {
             {submitting ? "Signing In..." : "Sign In"}
           </button>
         </form>
+        <Link to="/" className="mt-6 block text-center text-xs uppercase tracking-[0.25em] text-white/45 transition hover:text-[#f9bf1a]">
+          ← Return to website
+        </Link>
       </div>
     </div>
   );

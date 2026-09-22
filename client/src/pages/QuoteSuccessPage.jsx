@@ -16,7 +16,7 @@ export default function QuoteSuccessPage() {
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-white/65">
               {state?.customerName || "Thanks"} for sending your configurator request. Our team can now review the
-              selected vehicle, canopy, modules, and accessories before preparing your quote.
+              Premium Canopy Package specification before preparing your quote.
             </p>
 
             <div className="mt-8 grid gap-4 md:grid-cols-2">
@@ -34,16 +34,10 @@ export default function QuoteSuccessPage() {
               </div>
             </div>
 
-            <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <div className="mt-10 flex justify-center">
               <Link
                 to="/"
                 className="rounded-full bg-[#f9bf1a] px-6 py-3 font-medium text-black transition hover:opacity-85"
-              >
-                Build Another Vehicle
-              </Link>
-              <Link
-                to="/"
-                className="rounded-full border border-white/15 px-6 py-3 text-white transition hover:border-[#f9bf1a] hover:text-[#f9bf1a]"
               >
                 Return to Builder
               </Link>

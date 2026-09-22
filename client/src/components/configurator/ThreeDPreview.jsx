@@ -268,6 +268,42 @@ function LoadedVehicleModel({ vehicle }) {
   );
 }
 
+function LoadedProductModel({ product }) {
+  const { scene } = useGLTF(resolveAssetUrl(product.modelUrl));
+  const model = useMemo(() => {
+    const next = scene.clone(true);
+    next.traverse((node) => {
+      if (node.isMesh) {
+        node.castShadow = true;
+        node.receiveShadow = true;
+      }
+    });
+    return next;
+  }, [scene]);
+
+  const scale = useMemo(() => normalizeVector3(product.modelScale, [1, 1, 1]), [product.modelScale]);
+  const position = useMemo(
+    () => normalizeVector3(product.modelPosition, [0, 0, 0]),
+    [product.modelPosition]
+  );
+  const rotation = useMemo(
+    () => normalizeVector3(product.modelRotation, [0, 0, 0]).map(degreesToRadians),
+    [product.modelRotation]
+  );
+
+  return <primitive object={model} scale={scale} position={position} rotation={rotation} />;
+}
+
+function UploadedProductModels({ products }) {
+  return products
+    .filter((product) => product?.modelUrl)
+    .map((product) => (
+      <Suspense key={product._id || product.slug} fallback={null}>
+        <LoadedProductModel product={product} />
+      </Suspense>
+    ));
+}
+
 function CanopyShell({ trayLength, trayHeight, canopy }) {
   const profile = canopyProfiles[canopy?.slug] || defaultCanopyProfile;
   const canopyWidth = 1.72;
@@ -442,6 +478,9 @@ function TruckScene({ vehicle, canopy, modules, accessories, layout }) {
     x: rawFrameOffset.x * layout.frameOffsetScale,
     z: rawFrameOffset.z
   };
+  const proceduralModules = modules.filter((item) => !item.modelUrl);
+  const proceduralAccessories = accessories.filter((item) => !item.modelUrl);
+  const uploadedProducts = [canopy, ...modules, ...accessories].filter(Boolean);
 
   return (
     <group position={[-frameOffset.x, layout.sceneYOffset, -frameOffset.z]}>
@@ -453,14 +492,19 @@ function TruckScene({ vehicle, canopy, modules, accessories, layout }) {
         <ProceduralVehicle profile={profile} />
       )}
 
-      {canopy ? <CanopyShell trayLength={profile.trayLength} trayHeight={trayHeight} canopy={canopy} /> : null}
+      {canopy && !canopy.modelUrl ? (
+        <CanopyShell trayLength={profile.trayLength} trayHeight={trayHeight} canopy={canopy} />
+      ) : null}
       {canopy ? (
-        <SelectedAddOns
-          modules={modules}
-          accessories={accessories}
-          trayHeight={trayHeight}
-          trayLength={profile.trayLength}
-        />
+        <>
+          <UploadedProductModels products={uploadedProducts} />
+          <SelectedAddOns
+            modules={proceduralModules}
+            accessories={proceduralAccessories}
+            trayHeight={trayHeight}
+            trayLength={profile.trayLength}
+          />
+        </>
       ) : null}
     </group>
   );

@@ -4,6 +4,25 @@ import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 const productTypes = new Set(["canopy", "module", "accessory"]);
+const defaultVector3 = (x, y, z) => ({ x, y, z });
+
+const sanitizeVector3 = (value, fallback) => {
+  if (!value || typeof value !== "object") {
+    return fallback;
+  }
+
+  const vector = {
+    x: Number(value.x),
+    y: Number(value.y),
+    z: Number(value.z)
+  };
+
+  return {
+    x: Number.isFinite(vector.x) ? vector.x : fallback.x,
+    y: Number.isFinite(vector.y) ? vector.y : fallback.y,
+    z: Number.isFinite(vector.z) ? vector.z : fallback.z
+  };
+};
 
 const sanitizePosition = (position) => {
   if (
@@ -26,10 +45,22 @@ const sanitizePosition = (position) => {
 };
 
 const sanitizeProductPayload = (payload) => {
-  const { name, slug, type, svg, price, description, positions = [] } = payload;
+  const {
+    name,
+    slug,
+    type,
+    svg,
+    modelUrl,
+    modelScale,
+    modelPosition,
+    modelRotation,
+    price,
+    description,
+    positions = []
+  } = payload;
 
-  if (!name || !slug || !type || !svg || price === undefined) {
-    throw new ApiError(400, "Product requires name, slug, type, svg, and price");
+  if (!name || !slug || !type || price === undefined) {
+    throw new ApiError(400, "Product requires name, slug, type, and price");
   }
 
   if (!productTypes.has(type)) {
@@ -40,7 +71,11 @@ const sanitizeProductPayload = (payload) => {
     name: name.trim(),
     slug: slug.trim(),
     type,
-    svg: svg.trim(),
+    svg: String(svg || "").trim(),
+    modelUrl: String(modelUrl || "").trim(),
+    modelScale: sanitizeVector3(modelScale, defaultVector3(1, 1, 1)),
+    modelPosition: sanitizeVector3(modelPosition, defaultVector3(0, 0, 0)),
+    modelRotation: sanitizeVector3(modelRotation, defaultVector3(0, 0, 0)),
     price: Number(price),
     description: description?.trim() || "",
     positions: positions.map(sanitizePosition)

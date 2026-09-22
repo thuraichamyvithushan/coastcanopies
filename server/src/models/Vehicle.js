@@ -40,7 +40,7 @@ const vehicleSchema = new mongoose.Schema(
     },
     svgBase: {
       type: String,
-      required: true,
+      default: "",
       trim: true
     },
     modelUrl: {

@@ -28,6 +28,33 @@ export const uploadVehicleAsset = (token, payload) =>
     body: JSON.stringify(payload)
   });
 
+const MAX_MODEL_FILE_SIZE = 200 * 1024 * 1024;
+
+export const uploadModelAsset = (token, { assetType, file, slug }) => {
+  if (!file) {
+    throw new Error("Choose a GLB model before uploading");
+  }
+
+  if (file.size > MAX_MODEL_FILE_SIZE) {
+    throw new Error("GLB model must be 200 MB or smaller");
+  }
+
+  const query = new URLSearchParams({
+    assetType,
+    slug,
+    fileName: file.name
+  });
+
+  return request(`/api/admin/uploads/model?${query.toString()}`, {
+    method: "POST",
+    token,
+    headers: {
+      "Content-Type": file.type || "application/octet-stream"
+    },
+    body: file
+  });
+};
+
 export const createVehicle = (token, payload) =>
   request("/api/admin/vehicles", {
     method: "POST",

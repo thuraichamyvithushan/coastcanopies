@@ -1,6 +1,11 @@
+import { lazy, Suspense, useState } from "react";
 import TwoDPreview from "./TwoDPreview.jsx";
 
+const ThreeDPreview = lazy(() => import("./ThreeDPreview.jsx"));
+
 export const PreviewPanel = ({ vehicle, canopy, modules, accessories }) => {
+  const [previewMode, setPreviewMode] = useState("3d");
+
   if (!vehicle) {
     return (
       <div className="w-full rounded-[1.35rem] border border-[#d6c5a6] bg-[linear-gradient(180deg,#1f1c19,#121313)] p-1 shadow-[0_18px_36px_rgba(40,30,18,0.16)] md:rounded-[1.8rem] md:p-1.5 lg:p-2">
@@ -27,10 +32,49 @@ export const PreviewPanel = ({ vehicle, canopy, modules, accessories }) => {
       <div>
         <div className="mx-auto w-full overflow-hidden rounded-[1.1rem] border border-white/10 bg-[#0d0d0d] md:rounded-[1.6rem]">
           <div className="relative min-h-[300px] sm:min-h-[360px] md:min-h-[500px] lg:min-h-[700px] xl:min-h-[760px]">
-            <TwoDPreview vehicle={vehicle} canopy={canopy} modules={modules} accessories={accessories} />
+            <div className="absolute right-3 top-3 z-10 flex rounded-full border border-white/15 bg-black/65 p-1 shadow-lg backdrop-blur md:right-4 md:top-4">
+              <PreviewModeButton
+                active={previewMode === "3d"}
+                label="3D"
+                onClick={() => setPreviewMode("3d")}
+              />
+              <PreviewModeButton
+                active={previewMode === "2d"}
+                label="2D"
+                onClick={() => setPreviewMode("2d")}
+              />
+            </div>
+            <div className="absolute inset-0">
+              {previewMode === "3d" ? (
+                <Suspense fallback={<PreviewLoadingState />}>
+                  <ThreeDPreview vehicle={vehicle} canopy={canopy} modules={modules} accessories={accessories} />
+                </Suspense>
+              ) : (
+                <TwoDPreview vehicle={vehicle} canopy={canopy} modules={modules} accessories={accessories} />
+              )}
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 };
+
+const PreviewModeButton = ({ active, label, onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-pressed={active}
+    className={`rounded-full px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] transition md:px-4 md:py-2 ${
+      active ? "bg-[#f9bf1a] text-black" : "text-white/65 hover:text-white"
+    }`}
+  >
+    {label}
+  </button>
+);
+
+const PreviewLoadingState = () => (
+  <div className="flex h-full w-full items-center justify-center bg-[#111111] text-xs uppercase tracking-[0.24em] text-white/45">
+    Loading 3D preview...
+  </div>
+);

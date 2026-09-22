@@ -11,7 +11,7 @@ import {
   deleteVehicle,
   updateVehicle
 } from "../controllers/vehicleController.js";
-import { uploadVehicleAsset } from "../controllers/uploadController.js";
+import { uploadModelAsset, uploadVehicleAsset } from "../controllers/uploadController.js";
 import { requireAdminAuth } from "../middleware/authMiddleware.js";
 
 export const adminRouter = Router();
@@ -20,6 +20,7 @@ adminRouter.post("/login", loginAdmin);
 
 adminRouter.use(requireAdminAuth);
 adminRouter.post("/uploads/vehicle-assets", uploadVehicleAsset);
+adminRouter.post("/uploads/model", uploadModelAsset);
 adminRouter.post("/vehicles", createVehicle);
 adminRouter.put("/vehicles/:id", updateVehicle);
 adminRouter.delete("/vehicles/:id", deleteVehicle);
