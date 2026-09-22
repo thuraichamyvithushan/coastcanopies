@@ -300,20 +300,26 @@ export const completeModelUpload = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Model upload session was not found or has expired");
   }
 
-  const uploadedChunks = await chunks
-    .find({ files_id: session.fileId })
-    .sort({ n: 1 })
-    .project({ n: 1, data: 1 })
+  const [uploadStats] = await chunks
+    .aggregate([
+      { $match: { files_id: session.fileId } },
+      {
+        $group: {
+          _id: null,
+          chunkCount: { $sum: 1 },
+          uploadedBytes: { $sum: { $binarySize: "$data" } },
+          firstChunk: { $min: "$n" },
+          lastChunk: { $max: "$n" }
+        }
+      }
+    ])
     .toArray();
-  const uploadedBytes = uploadedChunks.reduce(
-    (total, chunk) => total + getChunkBuffer(chunk.data).length,
-    0
-  );
   const hasCompleteSequence =
-    uploadedChunks.length === session.totalChunks &&
-    uploadedChunks.every((chunk, index) => chunk.n === index);
+    uploadStats?.chunkCount === session.totalChunks &&
+    uploadStats?.firstChunk === 0 &&
+    uploadStats?.lastChunk === session.totalChunks - 1;
 
-  if (!hasCompleteSequence || uploadedBytes !== session.expectedBytes) {
+  if (!hasCompleteSequence || uploadStats.uploadedBytes !== session.expectedBytes) {
     throw new ApiError(409, "Model upload is incomplete; retry the missing chunks");
   }
 

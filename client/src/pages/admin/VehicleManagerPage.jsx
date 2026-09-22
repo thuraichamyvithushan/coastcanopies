@@ -36,6 +36,7 @@ export default function VehicleManagerPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState(null);
 
   const loadVehicles = async () => {
     try {
@@ -62,11 +63,13 @@ export default function VehicleManagerPage() {
       ...current,
       [name]: nextFile
     }));
+    setUploadStatus(null);
   };
 
   const handleEdit = (vehicle) => {
     setEditingId(vehicle._id);
     setSelectedFiles(initialSelectedFiles);
+    setUploadStatus(null);
     setForm({
       name: vehicle.name,
       slug: vehicle.slug,
@@ -85,6 +88,7 @@ export default function VehicleManagerPage() {
     setEditingId("");
     setForm(initialForm);
     setSelectedFiles(initialSelectedFiles);
+    setUploadStatus(null);
   };
 
   const handleSubmit = async (event) => {
@@ -92,6 +96,7 @@ export default function VehicleManagerPage() {
     setMessage("");
     setError("");
     setIsSubmitting(true);
+    setUploadStatus(null);
 
     try {
       const vehicleSlug = form.slug.trim();
@@ -99,9 +104,16 @@ export default function VehicleManagerPage() {
         ? (await uploadModelAsset(auth.token, {
             assetType: "model",
             file: selectedFiles.modelFile,
-            slug: vehicleSlug
+            slug: vehicleSlug,
+            onProgress: setUploadStatus
           })).path
         : form.modelUrl;
+
+      if (selectedFiles.modelFile) {
+        setForm((current) => ({ ...current, modelUrl }));
+        setSelectedFiles(initialSelectedFiles);
+        setUploadStatus({ phase: "saving", percent: 100 });
+      }
 
       const payload = {
         ...form,
@@ -213,6 +225,9 @@ export default function VehicleManagerPage() {
               Clear
             </button>
           </div>
+          {isSubmitting && uploadStatus ? (
+            <UploadProgress status={uploadStatus} noun="vehicle" />
+          ) : null}
           {message ? <p className="mt-4 text-sm text-emerald-300">{message}</p> : null}
           {error ? <p className="mt-4 text-sm text-red-200">{error}</p> : null}
         </form>
@@ -286,3 +301,24 @@ const FileField = ({ label, name, accept, onChange, hint }) => (
     {hint ? <p className="mt-2 text-xs text-white/45">{hint}</p> : null}
   </label>
 );
+
+const UploadProgress = ({ status, noun }) => {
+  const label =
+    status.phase === "uploading"
+      ? `Uploading 3D model: ${status.percent}%`
+      : status.phase === "finalizing"
+        ? "Finalizing 3D model..."
+        : `Saving ${noun}...`;
+
+  return (
+    <div className="mt-4" aria-live="polite">
+      <div className="h-2 overflow-hidden rounded-full bg-white/10">
+        <div
+          className="h-full rounded-full bg-[#f9bf1a] transition-[width] duration-300"
+          style={{ width: `${status.percent}%` }}
+        />
+      </div>
+      <p className="mt-2 text-sm text-white/65">{label}</p>
+    </div>
+  );
+};

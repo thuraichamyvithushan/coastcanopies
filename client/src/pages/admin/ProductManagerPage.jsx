@@ -38,6 +38,7 @@ export default function ProductManagerPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState(null);
 
   const loadProducts = async () => {
     try {
@@ -64,11 +65,13 @@ export default function ProductManagerPage() {
       ...current,
       [name]: nextFile
     }));
+    setUploadStatus(null);
   };
 
   const handleEdit = (product) => {
     setEditingId(product._id);
     setSelectedFiles(initialSelectedFiles);
+    setUploadStatus(null);
     setForm({
       name: product.name,
       slug: product.slug,
@@ -88,6 +91,7 @@ export default function ProductManagerPage() {
     setEditingId("");
     setForm(initialForm);
     setSelectedFiles(initialSelectedFiles);
+    setUploadStatus(null);
   };
 
   const handleSubmit = async (event) => {
@@ -95,15 +99,23 @@ export default function ProductManagerPage() {
     setMessage("");
     setError("");
     setIsSubmitting(true);
+    setUploadStatus(null);
 
     try {
       const modelUrl = selectedFiles.productModelFile
         ? (await uploadModelAsset(auth.token, {
             assetType: "product-model",
             file: selectedFiles.productModelFile,
-            slug: form.slug.trim()
+            slug: form.slug.trim(),
+            onProgress: setUploadStatus
           })).path
         : form.modelUrl;
+
+      if (selectedFiles.productModelFile) {
+        setForm((current) => ({ ...current, modelUrl }));
+        setSelectedFiles(initialSelectedFiles);
+        setUploadStatus({ phase: "saving", percent: 100 });
+      }
 
       const payload = {
         ...form,
@@ -237,6 +249,9 @@ export default function ProductManagerPage() {
               Clear
             </button>
           </div>
+          {isSubmitting && uploadStatus ? (
+            <UploadProgress status={uploadStatus} noun="product" />
+          ) : null}
           {message ? <p className="mt-4 text-sm text-emerald-300">{message}</p> : null}
           {error ? <p className="mt-4 text-sm text-red-200">{error}</p> : null}
         </form>
@@ -309,3 +324,24 @@ const FileField = ({ label, name, accept, onChange, hint }) => (
     {hint ? <p className="mt-2 text-xs text-white/45">{hint}</p> : null}
   </label>
 );
+
+const UploadProgress = ({ status, noun }) => {
+  const label =
+    status.phase === "uploading"
+      ? `Uploading 3D model: ${status.percent}%`
+      : status.phase === "finalizing"
+        ? "Finalizing 3D model..."
+        : `Saving ${noun}...`;
+
+  return (
+    <div className="mt-4" aria-live="polite">
+      <div className="h-2 overflow-hidden rounded-full bg-white/10">
+        <div
+          className="h-full rounded-full bg-[#f9bf1a] transition-[width] duration-300"
+          style={{ width: `${status.percent}%` }}
+        />
+      </div>
+      <p className="mt-2 text-sm text-white/65">{label}</p>
+    </div>
+  );
+};
