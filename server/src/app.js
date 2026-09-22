@@ -3,7 +3,8 @@ import express from "express";
 import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
-import { env } from "./config/env.js";
+import { connectDatabase } from "./config/db.js";
+import { env, getMissingRequiredEnv } from "./config/env.js";
 import { adminRouter } from "./routes/adminRoutes.js";
 import { publicRouter } from "./routes/publicRoutes.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorMiddleware.js";
@@ -53,6 +54,34 @@ app.get("/", (_req, res) => {
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
+});
+
+app.use(async (req, res, next) => {
+  if (!req.path.startsWith("/api/") || req.path === "/api/health") {
+    next();
+    return;
+  }
+
+  const missingEnv = getMissingRequiredEnv();
+
+  if (missingEnv.length) {
+    res.status(500).json({
+      message: "Missing required environment variables",
+      missing: missingEnv
+    });
+    return;
+  }
+
+  try {
+    await connectDatabase();
+    next();
+  } catch (error) {
+    console.error("Database connection failed", error);
+    res.status(500).json({
+      message: "Database connection failed",
+      detail: error?.message || "Unknown error"
+    });
+  }
 });
 
 app.use("/api", publicRouter);
