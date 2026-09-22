@@ -6,6 +6,9 @@ import { resolveAssetUrl } from "../../utils/assetUrl.js";
 const availabilityCache = new Map();
 const LIGHTWEIGHT_MATERIAL_SIZE = 12 * 1024 * 1024;
 const MAX_PREVIEW_TEXTURE_SIZE = 1024;
+const MODEL_DOWNLOAD_CONCURRENCY = 4;
+
+const isDatabaseModelUrl = (url) => String(url || "").includes("/api/models/");
 
 const createPreviewTexture = (sourceTexture) => {
   const image = sourceTexture?.image;
@@ -236,6 +239,103 @@ const LoadedGlb = ({ url, position, rotation, scale, autoCenter, lightweightMate
   );
 };
 
+const DatabaseGlb = ({
+  url,
+  position,
+  rotation,
+  scale,
+  autoCenter,
+  lightweightMaterials,
+  placeholder
+}) => {
+  const [sourceUrl, setSourceUrl] = useState("");
+  const [loadError, setLoadError] = useState(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const resolvedUrl = resolveAssetUrl(url);
+    let objectUrl = "";
+    let active = true;
+
+    const downloadModel = async () => {
+      const manifestResponse = await fetch(`${resolvedUrl}/manifest`, {
+        signal: controller.signal
+      });
+
+      if (!manifestResponse.ok) {
+        throw new Error(`Model manifest could not be loaded (${manifestResponse.status})`);
+      }
+
+      const manifest = await manifestResponse.json();
+      const totalChunks = Number(manifest.totalChunks || 0);
+
+      if (!Number.isInteger(totalChunks) || totalChunks <= 0) {
+        throw new Error("Model manifest is invalid");
+      }
+
+      const buffers = new Array(totalChunks);
+      let nextChunkIndex = 0;
+      const downloadWorker = async () => {
+        while (nextChunkIndex < totalChunks) {
+          const chunkIndex = nextChunkIndex;
+          nextChunkIndex += 1;
+          const chunkResponse = await fetch(`${resolvedUrl}/chunks/${chunkIndex}`, {
+            signal: controller.signal
+          });
+
+          if (!chunkResponse.ok) {
+            throw new Error(`Model chunk ${chunkIndex} could not be loaded (${chunkResponse.status})`);
+          }
+
+          buffers[chunkIndex] = await chunkResponse.arrayBuffer();
+        }
+      };
+
+      await Promise.all(
+        Array.from(
+          { length: Math.min(MODEL_DOWNLOAD_CONCURRENCY, totalChunks) },
+          () => downloadWorker()
+        )
+      );
+
+      if (!active) return;
+
+      objectUrl = URL.createObjectURL(
+        new Blob(buffers, { type: manifest.contentType || "model/gltf-binary" })
+      );
+      setSourceUrl(objectUrl);
+    };
+
+    setSourceUrl("");
+    setLoadError(null);
+    downloadModel().catch((error) => {
+      if (active && error?.name !== "AbortError") {
+        setLoadError(error);
+      }
+    });
+
+    return () => {
+      active = false;
+      controller.abort();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [url]);
+
+  if (loadError) throw loadError;
+  if (!sourceUrl) return placeholder;
+
+  return (
+    <LoadedGlb
+      url={sourceUrl}
+      position={position}
+      rotation={rotation}
+      scale={scale}
+      autoCenter={autoCenter}
+      lightweightMaterials={lightweightMaterials}
+    />
+  );
+};
+
 export const ModelAsset = ({
   url,
   position = [0, 0, 0],
@@ -253,14 +353,26 @@ export const ModelAsset = ({
   return (
     <ModelErrorBoundary key={url} fallback={fallback}>
       <Suspense fallback={placeholder}>
-        <LoadedGlb
-          url={url}
-          position={position}
-          rotation={rotation}
-          scale={scale}
-          autoCenter={autoCenter}
-          lightweightMaterials={availability.lightweightMaterials}
-        />
+        {isDatabaseModelUrl(url) ? (
+          <DatabaseGlb
+            url={url}
+            position={position}
+            rotation={rotation}
+            scale={scale}
+            autoCenter={autoCenter}
+            lightweightMaterials={availability.lightweightMaterials}
+            placeholder={placeholder}
+          />
+        ) : (
+          <LoadedGlb
+            url={url}
+            position={position}
+            rotation={rotation}
+            scale={scale}
+            autoCenter={autoCenter}
+            lightweightMaterials={availability.lightweightMaterials}
+          />
+        )}
       </Suspense>
     </ModelErrorBoundary>
   );

@@ -30,7 +30,7 @@ export const uploadVehicleAsset = (token, payload) =>
 
 const MAX_MODEL_FILE_SIZE = 200 * 1024 * 1024;
 
-export const uploadModelAsset = (token, { assetType, file, slug }) => {
+export const uploadModelAsset = async (token, { assetType, file, slug }) => {
   if (!file) {
     throw new Error("Choose a GLB model before uploading");
   }
@@ -39,19 +39,36 @@ export const uploadModelAsset = (token, { assetType, file, slug }) => {
     throw new Error("GLB model must be 200 MB or smaller");
   }
 
-  const query = new URLSearchParams({
-    assetType,
-    slug,
-    fileName: file.name
-  });
-
-  return request(`/api/admin/uploads/model?${query.toString()}`, {
+  const upload = await request("/api/admin/uploads/model/init", {
     method: "POST",
     token,
-    headers: {
-      "Content-Type": file.type || "application/octet-stream"
-    },
-    body: file
+    body: JSON.stringify({
+      assetType,
+      slug,
+      fileName: file.name,
+      fileSize: file.size,
+      mimeType: file.type || "application/octet-stream"
+    })
+  });
+
+  for (let chunkIndex = 0; chunkIndex < upload.totalChunks; chunkIndex += 1) {
+    const chunkStart = chunkIndex * upload.chunkSize;
+    const chunk = file.slice(chunkStart, Math.min(chunkStart + upload.chunkSize, file.size));
+
+    await request(`/api/admin/uploads/model/${upload.uploadId}/chunks/${chunkIndex}`, {
+      method: "PUT",
+      token,
+      headers: {
+        "Content-Type": "application/octet-stream"
+      },
+      body: chunk
+    });
+  }
+
+  return request(`/api/admin/uploads/model/${upload.uploadId}/complete`, {
+    method: "POST",
+    token,
+    body: JSON.stringify({})
   });
 };
 

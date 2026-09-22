@@ -11,7 +11,7 @@ export const resolveAssetUrl = (value) => {
     return value;
   }
 
-  if (value.startsWith("/uploads/")) {
+  if (value.startsWith("/uploads/") || value.startsWith("/api/models/")) {
     return buildUrl(value);
   }
 
