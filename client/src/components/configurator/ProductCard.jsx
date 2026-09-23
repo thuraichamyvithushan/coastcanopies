@@ -1,3 +1,5 @@
+import { preloadModel } from "../../utils/preloadModel.js";
+
 export const ProductCard = ({ item, selected, onClick, priceLabel, description, badge }) => (
   <button
     type="button"
@@ -32,4 +34,4 @@ export const ProductCard = ({ item, selected, onClick, priceLabel, description, 
     ) : null}
   </button>
 );
-import { preloadModel } from "../../utils/preloadModel.js";
+

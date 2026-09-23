@@ -7,6 +7,7 @@ import { SiteShell } from "../components/layout/SiteShell.jsx";
 import { productConfig } from "../config/productConfig.js";
 import { useConfigurator } from "../hooks/useConfigurator.js";
 import { formatNzd } from "../utils/pricing.js";
+import { preloadModel } from "../utils/preloadModel.js";
 
 const Viewer3D = lazy(() =>
   import("../components/configurator/Viewer3D.jsx").then((module) => ({ default: module.Viewer3D }))
@@ -69,6 +70,16 @@ export default function ConfiguratorPage() {
 
         setAdminAccessories(products.map(toAdminAccessory));
         setAdminVehicles(vehicles);
+
+        // Preload vehicle and canopy 3D models in background
+        const urlsToPreload = [
+          ...vehicles.map((v) => v.modelUrl),
+          ...products.map((p) => p.modelUrl)
+        ].filter(Boolean);
+
+        urlsToPreload.forEach((url, i) => {
+          setTimeout(() => preloadModel(url), i * 150);
+        });
       })
       .catch(() => {
         if (active) setError("Admin products could not be loaded. Please refresh and try again.");
@@ -81,6 +92,7 @@ export default function ConfiguratorPage() {
       active = false;
     };
   }, []);
+
 
   const handleCustomerChange = (event) => {
     const { name, value } = event.target;
