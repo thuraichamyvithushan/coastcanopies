@@ -8,6 +8,7 @@ import {
 } from "../../api/admin.js";
 import { AdminLayout } from "../../components/admin/AdminLayout.jsx";
 import { JsonTextAreaField } from "../../components/admin/JsonTextAreaField.jsx";
+import { TransformSliderField } from "../../components/admin/TransformSliderField.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 const initialForm = {
@@ -179,26 +180,38 @@ export default function VehicleManagerPage() {
                     : "Optional: choose a self-contained GLB model for the live 3D builder."
               }
             />
-            <JsonTextAreaField
-              label="3D Scale JSON"
+            <TransformSliderField
+              label="3D Vehicle Scale"
               name="modelScale"
               value={form.modelScale}
               onChange={handleChange}
-              hint='Model scale. Example: { "x": 1, "y": 1, "z": 1 }'
+              min={0.1}
+              max={4.0}
+              step={0.05}
+              unit="x"
+              hint="Adjust 3D vehicle size across X (width), Y (height), Z (depth) or use Uniform slider."
             />
-            <JsonTextAreaField
-              label="3D Position JSON"
+            <TransformSliderField
+              label="3D Vehicle Position"
               name="modelPosition"
               value={form.modelPosition}
               onChange={handleChange}
-              hint='Position relative to the builder scene. Example: { "x": 0, "y": 0, "z": 0 }'
+              min={-5.0}
+              max={5.0}
+              step={0.05}
+              unit="m"
+              hint="Position vehicle relative to builder scene origin."
             />
-            <JsonTextAreaField
-              label="3D Rotation JSON (degrees)"
+            <TransformSliderField
+              label="3D Vehicle Rotation"
               name="modelRotation"
               value={form.modelRotation}
               onChange={handleChange}
-              hint='Rotation uses degrees. Example: { "x": 0, "y": 90, "z": 0 }'
+              min={-180}
+              max={180}
+              step={5}
+              unit="°"
+              hint="Rotate vehicle 3D model in degrees (X, Y, Z)."
             />
             <Field label="Price" name="price" type="number" value={form.price} onChange={handleChange} />
             <JsonTextAreaField
