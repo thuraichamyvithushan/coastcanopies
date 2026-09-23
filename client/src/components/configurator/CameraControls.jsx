@@ -51,12 +51,12 @@ export const CameraControls = ({ request, focusPosition }) => {
       enableDamping
       dampingFactor={0.08}
       enablePan={false}
-      minDistance={4.5}
-      maxDistance={16}
-      minPolarAngle={Math.PI / 4.2}
+      minDistance={2.5}
+      maxDistance={28}
+      minPolarAngle={Math.PI / 6}
       maxPolarAngle={Math.PI / 2.02}
-      rotateSpeed={0.65}
-      zoomSpeed={1.1}
+      rotateSpeed={0.7}
+      zoomSpeed={1.2}
       target={cameraViews.reset.target}
     />
   );
