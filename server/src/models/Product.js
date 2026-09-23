@@ -65,7 +65,7 @@ const productSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ["canopy", "module", "accessory"]
+      enum: ["canopy", "tray", "accessory"]
     },
     svg: {
       type: String,

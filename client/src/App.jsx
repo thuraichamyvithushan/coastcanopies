@@ -40,10 +40,26 @@ export default function App() {
           }
         />
         <Route
-          path="/admin/dashboard/products"
+          path="/admin/dashboard/trays"
           element={
             <ProtectedRoute>
-              <ProductManagerPage />
+              <ProductManagerPage managedType="tray" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard/canopies"
+          element={
+            <ProtectedRoute>
+              <ProductManagerPage managedType="canopy" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard/accessories"
+          element={
+            <ProtectedRoute>
+              <ProductManagerPage managedType="accessory" />
             </ProtectedRoute>
           }
         />

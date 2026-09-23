@@ -4,11 +4,13 @@ import { AccessoryCard } from "./AccessoryCard.jsx";
 import { BuildSummary } from "./BuildSummary.jsx";
 import { ProductCard } from "./ProductCard.jsx";
 
-const steps = ["Vehicle", "Canopy", "Accessories", "Summary"];
+const steps = ["Vehicle", "Tray", "Canopy", "Accessories", "Summary"];
 
 export const ConfiguratorSidebar = ({ configurator, summaryProps, loading }) => {
   const [drawerCollapsed, setDrawerCollapsed] = useState(false);
-  const accessories = configurator.accessories.filter((item) => item.adminProduct?.type !== "canopy");
+  const accessories = configurator.accessories.filter(
+    (item) => item.adminProduct?.type !== "canopy" && item.adminProduct?.type !== "tray"
+  );
   const stepIndex = steps.indexOf(configurator.activeCategory);
   const nextStep = steps[stepIndex + 1];
 
@@ -42,7 +44,7 @@ export const ConfiguratorSidebar = ({ configurator, summaryProps, loading }) => 
           <section>
             <p className="text-[10px] uppercase tracking-[0.28em] text-[#efc400]">Step 1</p>
             <h2 className="mt-2 text-xl font-semibold">Choose your vehicle</h2>
-            <p className="mt-2 text-sm leading-6 text-white/55">Select your vehicle, then choose a canopy and add accessories.</p>
+            <p className="mt-2 text-sm leading-6 text-white/55">Select your vehicle, then choose a tray, canopy, and accessories.</p>
             <div className="mt-5 space-y-3">
               {configurator.vehicles.map((vehicle) => (
                 <ProductCard
@@ -59,11 +61,33 @@ export const ConfiguratorSidebar = ({ configurator, summaryProps, loading }) => 
           </section>
         ) : null}
 
-        {configurator.activeCategory === "Canopy" ? (
+        {configurator.activeCategory === "Tray" ? (
           <section>
             <p className="text-[10px] uppercase tracking-[0.28em] text-[#efc400]">Step 2</p>
-            <h2 className="mt-2 text-xl font-semibold">Choose your canopy</h2>
+            <h2 className="mt-2 text-xl font-semibold">Choose your tray</h2>
             <p className="mt-2 text-sm text-white/55">Vehicle: {configurator.selectedVehicle?.name}</p>
+            <div className="mt-5 space-y-3">
+              {configurator.trays.map((tray) => (
+                <ProductCard
+                  key={tray.id}
+                  item={tray}
+                  selected={configurator.selectedTray?.id === tray.id}
+                  onClick={() => configurator.selectTray(tray)}
+                  description={tray.adminProduct.description}
+                  priceLabel={`+ ${formatNzd(tray.price)}`}
+                  badge={configurator.selectedTray?.id === tray.id ? "Selected" : undefined}
+                />
+              ))}
+              {!loading && !configurator.trays.length ? <p className="text-sm text-white/55">No trays are available yet.</p> : null}
+            </div>
+          </section>
+        ) : null}
+
+        {configurator.activeCategory === "Canopy" ? (
+          <section>
+            <p className="text-[10px] uppercase tracking-[0.28em] text-[#efc400]">Step 3</p>
+            <h2 className="mt-2 text-xl font-semibold">Choose your canopy</h2>
+            <p className="mt-2 text-sm text-white/55">Tray: {configurator.selectedTray?.name}</p>
             <div className="mt-5 space-y-3">
               {configurator.canopies.map((canopy) => (
                 <ProductCard
@@ -83,7 +107,7 @@ export const ConfiguratorSidebar = ({ configurator, summaryProps, loading }) => 
 
         {configurator.activeCategory === "Accessories" ? (
           <section>
-            <p className="text-[10px] uppercase tracking-[0.28em] text-[#efc400]">Step 3</p>
+            <p className="text-[10px] uppercase tracking-[0.28em] text-[#efc400]">Step 4</p>
             <h2 className="mt-2 text-xl font-semibold">Add accessories</h2>
             <p className="mt-2 text-sm text-white/55">Canopy: {configurator.selectedCanopy?.name}. Accessories are optional.</p>
             <div className="mt-5 space-y-3">

@@ -42,11 +42,11 @@ const formatAxes = (obj, fallback = { x: 1, y: 1, z: 1 }, suffix = "") => {
   return `X: ${x}${suffix} · Y: ${y}${suffix} · Z: ${z}${suffix}`;
 };
 
-export default function ProductManagerPage() {
+export default function ProductManagerPage({ managedType = "canopy" }) {
   const { auth } = useAuth();
   const formRef = useRef(null);
   const [products, setProducts] = useState([]);
-  const [form, setForm] = useState(initialForm);
+  const [form, setForm] = useState({ ...initialForm, type: managedType });
   const [editingId, setEditingId] = useState("");
   const [selectedFiles, setSelectedFiles] = useState(initialSelectedFiles);
   const [message, setMessage] = useState("");
@@ -65,6 +65,10 @@ export default function ProductManagerPage() {
   useEffect(() => {
     loadProducts();
   }, []);
+
+  useEffect(() => {
+    resetForm();
+  }, [managedType]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -110,7 +114,7 @@ export default function ProductManagerPage() {
 
   const resetForm = () => {
     setEditingId("");
-    setForm(initialForm);
+    setForm({ ...initialForm, type: managedType });
     setSelectedFiles(initialSelectedFiles);
     setUploadStatus(null);
   };
@@ -191,34 +195,25 @@ export default function ProductManagerPage() {
     }
   };
 
+  const pluralType = managedType === "tray" ? "Trays" : managedType === "canopy" ? "Canopies" : "Accessories";
+  const singleType = managedType.charAt(0).toUpperCase() + managedType.slice(1);
+
   return (
     <AdminLayout
-      title="Product Manager"
-      description="Manually control GLB 3D product dimensions, positioning, pricing, and compatibility."
+      title={`${pluralType} Manager`}
+      description={`Manually control GLB 3D dimensions, positioning, pricing, and compatibility for ${pluralType.toLowerCase()}.`}
     >
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
         <form ref={formRef} onSubmit={handleSubmit} className="panel rounded-[2rem] p-6">
           <h2 className="font-display text-3xl uppercase tracking-[0.08em] text-white">
-            {editingId ? "Edit Product Sizes & Details" : "Add Product"}
+            {editingId ? `Edit ${singleType} Sizes & Details` : `Add ${singleType}`}
           </h2>
 
           <div className="mt-6 space-y-5">
             <Field label="Name" name="name" value={form.name} onChange={handleChange} />
             <Field label="Slug" name="slug" value={form.slug} onChange={handleChange} />
 
-            <label className="block">
-              <span className="mb-2 block text-sm uppercase tracking-[0.25em] text-white/55">Type</span>
-              <select
-                name="type"
-                value={form.type}
-                onChange={handleChange}
-                className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none transition focus:border-[#f9bf1a]"
-              >
-                <option value="canopy">Canopy</option>
-                <option value="module">Module</option>
-                <option value="accessory">Accessory</option>
-              </select>
-            </label>
+            {/* Type is automatically determined by managedType */}
 
             <FileField
               label="3D Product Model (.glb)"
@@ -298,7 +293,7 @@ export default function ProductManagerPage() {
               disabled={isSubmitting}
               className="rounded-full bg-[#f9bf1a] px-6 py-3 font-semibold text-black disabled:opacity-60 transition hover:bg-[#ffd04a]"
             >
-              {isSubmitting ? "Saving..." : editingId ? "Save Product Sizes" : "Create Product"}
+              {isSubmitting ? "Saving..." : editingId ? `Save ${singleType}` : `Create ${singleType}`}
             </button>
             <button
               type="button"
@@ -319,25 +314,22 @@ export default function ProductManagerPage() {
 
         <section className="panel rounded-[2rem] p-6">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-3xl uppercase tracking-[0.08em] text-white">Current Products</h2>
-            <span className="text-xs uppercase tracking-[0.2em] text-[#f9bf1a] font-semibold">{products.length} Products</span>
+            <h2 className="font-display text-3xl uppercase tracking-[0.08em] text-white">Current {pluralType}</h2>
+            <span className="text-xs uppercase tracking-[0.2em] text-[#f9bf1a] font-semibold">
+              {products.filter((p) => p.type === managedType).length} {pluralType}
+            </span>
           </div>
-          <p className="mt-1 text-xs text-white/50">Current product size dimensions and coordinates.</p>
+          <p className="mt-1 text-xs text-white/50">Current 3D dimensions, positions, and pricing.</p>
 
           <div className="mt-6 space-y-4">
-            {products.map((product) => (
+            {products.filter((p) => p.type === managedType).map((product) => (
               <div key={product._id} className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 transition hover:border-white/20">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-display text-2xl uppercase tracking-[0.06em] text-white">{product.name}</h3>
-                      <span className="rounded-full border border-[#f9bf1a]/30 bg-[#f9bf1a]/10 px-2.5 py-0.5 text-[10px] uppercase tracking-[0.18em] text-[#f9bf1a]">
-                        {product.type}
-                      </span>
-                    </div>
+                    <h3 className="font-display text-2xl uppercase tracking-[0.06em] text-white">{product.name}</h3>
                     <p className="mt-1 text-sm text-white/55">{product.description || "No description"}</p>
                     <p className="mt-1.5 text-xs uppercase tracking-[0.18em] text-white/40">
-                      {product.modelUrl ? "✓ 3D Model Attached" : "Procedural 3D Fallback"}
+                      {product.modelUrl ? "✓ 3D Model Attached" : "No 3D Model"}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -346,7 +338,7 @@ export default function ProductManagerPage() {
                       onClick={() => handleEdit(product)}
                       className="rounded-full border border-[#f9bf1a] bg-[#f9bf1a]/10 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#f9bf1a] hover:bg-[#f9bf1a] hover:text-black transition"
                     >
-                      Edit Sizes
+                      Edit
                     </button>
                     <button
                       type="button"
@@ -358,10 +350,9 @@ export default function ProductManagerPage() {
                   </div>
                 </div>
 
-                {/* Clean Manual Sizes Display Badge */}
                 <div className="mt-4 rounded-2xl border border-white/10 bg-black/40 p-4 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] uppercase tracking-[0.2em] text-[#f9bf1a] font-semibold">3D Dimensions (Scale)</span>
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-[#f9bf1a] font-semibold">3D Scale</span>
                     <span className="font-mono text-xs text-white font-semibold">
                       {formatAxes(product.modelScale, { x: 1, y: 1, z: 1 })}
                     </span>
@@ -377,6 +368,9 @@ export default function ProductManagerPage() {
                 </div>
               </div>
             ))}
+            {!products.filter((p) => p.type === managedType).length ? (
+              <p className="text-sm text-white/40">No {pluralType.toLowerCase()} added yet.</p>
+            ) : null}
           </div>
         </section>
       </div>

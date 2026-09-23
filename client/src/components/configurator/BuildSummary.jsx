@@ -4,6 +4,7 @@ import { CustomerForm } from "./CustomerForm.jsx";
 
 export const BuildSummary = ({
   selectedVehicle,
+  selectedTray,
   selectedCanopy,
   optionalExtras,
   selectedOptionalExtras,
@@ -20,6 +21,7 @@ export const BuildSummary = ({
       <p className="text-[10px] uppercase tracking-[0.25em] text-[#efc400]">Build Summary</p>
       <h2 className="mt-2 text-xl font-semibold text-white">{productConfig.name}</h2>
       <p className="mt-3 text-sm text-white/65">Vehicle: {selectedVehicle?.name}</p>
+      <p className="mt-1 text-sm text-white/65">Tray: {selectedTray?.name}</p>
       <p className="mt-1 text-sm text-white/65">Canopy: {selectedCanopy?.name}</p>
 
       <dl className="mt-5 space-y-3 text-sm">

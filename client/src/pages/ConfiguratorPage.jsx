@@ -23,7 +23,7 @@ const initialCustomer = {
 
 const productTypeCategory = {
   canopy: "Canopy",
-  module: "Tray & Storage",
+  tray: "Tray",
   accessory: "Accessories"
 };
 
@@ -102,8 +102,8 @@ export default function ConfiguratorPage() {
   const handleRequestQuote = async (event) => {
     event.preventDefault();
     setError("");
-    if (!configurator.selectedVehicle || !configurator.selectedCanopy) {
-      setError("Please select your vehicle and canopy before requesting a quote.");
+    if (!configurator.selectedVehicle || !configurator.selectedTray || !configurator.selectedCanopy) {
+      setError("Please select your vehicle, tray, and canopy before requesting a quote.");
       return;
     }
     setSubmitting(true);
@@ -132,6 +132,7 @@ export default function ConfiguratorPage() {
 
   const summaryProps = {
     selectedVehicle: configurator.selectedVehicle,
+    selectedTray: configurator.selectedTray,
     selectedCanopy: configurator.selectedCanopy,
     optionalExtras: configurator.optionalExtras,
     selectedOptionalExtras: configurator.selectedOptionalExtras,
