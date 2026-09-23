@@ -52,12 +52,13 @@ const toAdminAccessory = (product) => {
 export default function ConfiguratorPage() {
   const navigate = useNavigate();
   const [adminAccessories, setAdminAccessories] = useState([]);
-  const configurator = useConfigurator(adminAccessories);
+  const [adminVehicles, setAdminVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const configurator = useConfigurator(adminAccessories, adminVehicles);
   const [customer, setCustomer] = useState(initialCustomer);
   const [specificationsOpen, setSpecificationsOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [modelOverrides, setModelOverrides] = useState({ vehicle: null });
 
   useEffect(() => {
     let active = true;
@@ -66,15 +67,14 @@ export default function ConfiguratorPage() {
       .then(([vehicles, products]) => {
         if (!active) return;
 
-        const fixedVehicle =
-          vehicles.find((item) => item.slug === "base-vehicle" && item.modelUrl) ||
-          vehicles.find((item) => item.modelUrl) ||
-          null;
         setAdminAccessories(products.map(toAdminAccessory));
-        setModelOverrides({ vehicle: fixedVehicle });
+        setAdminVehicles(vehicles);
       })
       .catch(() => {
         if (active) setError("Admin products could not be loaded. Please refresh and try again.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
 
     return () => {
@@ -90,11 +90,16 @@ export default function ConfiguratorPage() {
   const handleRequestQuote = async (event) => {
     event.preventDefault();
     setError("");
+    if (!configurator.selectedVehicle || !configurator.selectedCanopy) {
+      setError("Please select your vehicle and canopy before requesting a quote.");
+      return;
+    }
     setSubmitting(true);
 
     try {
       const response = await submitQuote({
         packageId: productConfig.id,
+        vehicleId: configurator.selectedVehicle._id,
         selectedOptionalExtraIds: configurator.selectedOptionalExtras.map((item) => item.referenceId),
         customerInfo: customer
       });
@@ -114,6 +119,8 @@ export default function ConfiguratorPage() {
   };
 
   const summaryProps = {
+    selectedVehicle: configurator.selectedVehicle,
+    selectedCanopy: configurator.selectedCanopy,
     optionalExtras: configurator.optionalExtras,
     selectedOptionalExtras: configurator.selectedOptionalExtras,
     grandTotal: configurator.grandTotal,
@@ -173,13 +180,13 @@ export default function ConfiguratorPage() {
                 awningState={configurator.awningState}
                 focusedAccessoryId={configurator.focusedAccessoryId}
                 cameraResetKey={configurator.cameraResetKey}
-                modelOverrides={modelOverrides}
+                modelOverrides={{ vehicle: configurator.selectedVehicle }}
                 accessories={configurator.accessories}
               />
             </Suspense>
           </section>
 
-          <ConfiguratorSidebar configurator={configurator} summaryProps={summaryProps} />
+          <ConfiguratorSidebar configurator={configurator} summaryProps={summaryProps} loading={loading} />
         </main>
       </div>
 

@@ -1,4 +1,5 @@
 import { formatNzd } from "../../utils/pricing.js";
+import { preloadModel } from "../../utils/preloadModel.js";
 
 export const AccessoryCard = ({
   accessory,
@@ -9,6 +10,8 @@ export const AccessoryCard = ({
   onFocus
 }) => (
   <article
+    onPointerEnter={() => preloadModel(accessory.model)}
+    onFocus={() => preloadModel(accessory.model)}
     className={`border p-3.5 transition ${
       selected
         ? "border-[#efc400] bg-[#efc400]/[0.07]"

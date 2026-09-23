@@ -70,11 +70,22 @@ export const createQuote = asyncHandler(async (req, res) => {
       throw new ApiError(400, "One or more selected products were not found");
     }
 
+    let selectedVehicle = null;
+    if (vehicleId) {
+      if (!mongoose.isValidObjectId(vehicleId)) {
+        throw new ApiError(400, "Selected vehicle is invalid");
+      }
+      selectedVehicle = await Vehicle.findById(vehicleId);
+      if (!selectedVehicle) {
+        throw new ApiError(400, "Selected vehicle was not found");
+      }
+    }
+
     const selectedModules = selectedExtras.filter((item) => item.type === "module");
     const selectedAccessories = selectedExtras.filter((item) => item.type !== "module");
     const optionalExtrasTotal = selectedExtras.reduce((total, item) => total + item.price, 0);
     const quote = await Quote.create({
-      vehicle: {
+      vehicle: selectedVehicle ? { ...snapshotItem(selectedVehicle), price: 0 } : {
         name: "Coast Canopies Base Vehicle",
         slug: "base-vehicle",
         price: 0,

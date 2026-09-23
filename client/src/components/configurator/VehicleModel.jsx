@@ -15,6 +15,7 @@ export const VehicleModel = ({ vehicle, override }) => {
   return (
     <ModelAsset
       url={override?.modelUrl || ""}
+      name={override?.name || "vehicle"}
       position={transform.position}
       rotation={rotation}
       scale={scale}

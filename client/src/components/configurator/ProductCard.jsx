@@ -2,6 +2,8 @@ export const ProductCard = ({ item, selected, onClick, priceLabel, description, 
   <button
     type="button"
     onClick={onClick}
+    onPointerEnter={() => preloadModel(item.modelUrl || item.model)}
+    onFocus={() => preloadModel(item.modelUrl || item.model)}
     className={`w-full rounded-[1.1rem] border p-3 text-left transition duration-300 md:rounded-[1.5rem] md:p-4 xl:p-3.5 2xl:p-4 ${
       selected
         ? "border-[#f9bf1a] bg-[#f9bf1a]/10 shadow-glow"
@@ -30,3 +32,4 @@ export const ProductCard = ({ item, selected, onClick, priceLabel, description, 
     ) : null}
   </button>
 );
+import { preloadModel } from "../../utils/preloadModel.js";

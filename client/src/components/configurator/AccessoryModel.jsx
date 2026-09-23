@@ -56,6 +56,7 @@ export const AccessoryModel = ({ accessory, visible, state, override }) => {
       <ModelAsset
         key={`${accessory.id}-${index}-${modelUrl}`}
         url={modelUrl}
+        name={accessory.name}
         position={position}
         rotation={rotation}
         scale={scale}

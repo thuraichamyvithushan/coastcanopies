@@ -1,8 +1,7 @@
-import { ContactShadows } from "@react-three/drei";
+import { ContactShadows, Environment, Lightformer } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { Component, useEffect, useMemo, useState } from "react";
 import { modelTransforms } from "../../config/modelTransforms.js";
-import { productConfig } from "../../config/productConfig.js";
 import { AccessoryModel } from "./AccessoryModel.jsx";
 import { CameraControls } from "./CameraControls.jsx";
 import { VehicleModel } from "./VehicleModel.jsx";
@@ -87,7 +86,7 @@ const WebGLViewer = ({
   if (contextLost) return <WebGLUnavailable onRetry={onRetry} />;
 
   return (
-    <div className="relative h-full min-h-[50vh] overflow-hidden bg-[#131313] lg:min-h-0">
+    <div className="relative h-full min-h-[50vh] overflow-hidden bg-[#e5e7eb] lg:min-h-0">
       <Canvas
         camera={{ position: [7.3, 3.3, 8.3], fov: 36, near: 0.1, far: 80 }}
         dpr={[1, 1.25]}
@@ -104,9 +103,14 @@ const WebGLViewer = ({
           );
         }}
       >
-        <color attach="background" args={["#151718"]} />
-        <fog attach="fog" args={["#151718", 13, 25]} />
-        <hemisphereLight args={["#ffffff", "#9b9490", 1.15]} />
+        <color attach="background" args={["#e5e7eb"]} />
+        <fog attach="fog" args={["#e5e7eb", 13, 25]} />
+        <Environment resolution={128} frames={1}>
+          <Lightformer intensity={2} position={[0, 7, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[12, 12, 1]} />
+          <Lightformer intensity={2} position={[6, 3, 0]} rotation={[0, -Math.PI / 2, 0]} scale={[10, 6, 1]} />
+          <Lightformer intensity={2} position={[-6, 3, 0]} rotation={[0, Math.PI / 2, 0]} scale={[10, 6, 1]} />
+        </Environment>
+        <hemisphereLight args={["#ffffff", "#d1d5db", 1.15]} />
         <ambientLight intensity={0.65} />
         <directionalLight
           castShadow
@@ -119,16 +123,16 @@ const WebGLViewer = ({
         <directionalLight position={[-5, 4, -6]} intensity={0.55} color="#ffffff" />
 
         <group position={[0, 0.02, 0]}>
-          <VehicleModel vehicle={productConfig.vehicle} override={modelOverrides?.vehicle} />
+          {modelOverrides?.vehicle ? <VehicleModel override={modelOverrides.vehicle} /> : null}
           {accessories.map((accessory) => (
             <AccessoryModel
               key={accessory.id}
               accessory={accessory}
               visible={selectedIds.includes(accessory.id)}
               state={
-                accessory.id === "rooftop-tent"
+                accessory.transformId === "rooftop-tent"
                   ? rooftopTentState
-                  : accessory.id === "awning"
+                  : accessory.transformId === "awning"
                     ? awningState
                     : undefined
               }
@@ -139,7 +143,7 @@ const WebGLViewer = ({
 
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]} receiveShadow>
           <planeGeometry args={[34, 34]} />
-          <meshStandardMaterial color="#242627" roughness={0.92} metalness={0.08} />
+          <meshStandardMaterial color="#e5e7eb" roughness={0.92} metalness={0} />
         </mesh>
         <ContactShadows position={[0, 0.01, 0]} opacity={0.52} scale={13} blur={2.2} far={5} />
         <CameraControls request={viewRequest} focusPosition={focusPosition} />
@@ -158,10 +162,19 @@ const WebGLViewer = ({
         ))}
       </div>
 
-      <div className="pointer-events-none absolute left-4 top-4 border-l-2 border-[#efc400] pl-3 text-white md:left-6 md:top-6">
-        <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">Interactive 3D</p>
-        <p className="mt-1 text-xs text-white/70">Drag to rotate · Scroll to zoom</p>
+      <div className="pointer-events-none absolute left-4 top-4 border-l-2 border-[#efc400] pl-3 text-slate-800 md:left-6 md:top-6">
+        <p className="text-[10px] uppercase tracking-[0.28em] text-slate-500">Interactive 3D</p>
+        <p className="mt-1 text-xs text-slate-600">Drag to rotate · Scroll to zoom</p>
       </div>
+      {!modelOverrides?.vehicle ? (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-slate-600">
+          Select your vehicle to start your preview.
+        </div>
+      ) : !modelOverrides.vehicle.modelUrl ? (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-slate-600">
+          A 3D preview is not available for {modelOverrides.vehicle.name} yet.
+        </div>
+      ) : null}
     </div>
   );
 };
