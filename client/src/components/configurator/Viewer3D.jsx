@@ -14,12 +14,12 @@ const canUseWebGL = () => {
 };
 
 const WebGLUnavailable = ({ onRetry }) => (
-  <div className="relative flex h-full min-h-[50vh] items-center justify-center overflow-hidden bg-[#131313] px-6 text-center lg:min-h-0">
+  <div className="relative flex h-full min-h-[50vh] items-center justify-center overflow-hidden bg-[#fdf8e7] px-6 text-center lg:min-h-0">
     <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(circle_at_center,rgba(239,196,0,0.12),transparent_55%)]" />
-    <div className="relative max-w-md border border-white/10 bg-black/35 p-6">
+    <div className="relative max-w-md border border-slate-200 bg-white/70 p-6 shadow-sm">
       <span className="mx-auto flex h-11 w-11 items-center justify-center border border-[#efc400]/50 text-lg text-[#efc400]">3D</span>
-      <h2 className="mt-4 text-lg font-semibold text-white">3D renderer paused</h2>
-      <p className="mt-2 text-sm leading-6 text-white/50">
+      <h2 className="mt-4 text-lg font-semibold text-slate-800">3D renderer paused</h2>
+      <p className="mt-2 text-sm leading-6 text-slate-600">
         The browser could not start or recover its WebGL context. This can happen after GPU memory pressure or when hardware acceleration is unavailable.
       </p>
       {onRetry ? (
@@ -86,9 +86,9 @@ const WebGLViewer = ({
   if (contextLost) return <WebGLUnavailable onRetry={onRetry} />;
 
   return (
-    <div className="relative h-full min-h-[50vh] overflow-hidden bg-[#e5e7eb] lg:min-h-0">
+    <div className="relative h-full min-h-[50vh] overflow-hidden bg-[#fdf8e7] lg:min-h-0">
       <Canvas
-        camera={{ position: [7.3, 3.3, 8.3], fov: 36, near: 0.1, far: 80 }}
+        camera={{ position: [3.8, 2.0, 4.5], fov: 36, near: 0.1, far: 80 }}
         dpr={[1, 1.25]}
         shadows
         gl={{ antialias: true, powerPreference: "default", failIfMajorPerformanceCaveat: false }}
@@ -103,14 +103,14 @@ const WebGLViewer = ({
           );
         }}
       >
-        <color attach="background" args={["#e5e7eb"]} />
-        <fog attach="fog" args={["#e5e7eb", 13, 25]} />
+        <color attach="background" args={["#fdf8e7"]} />
+        <fog attach="fog" args={["#fdf8e7", 13, 25]} />
         <Environment resolution={128} frames={1}>
           <Lightformer intensity={2} position={[0, 7, 0]} rotation={[Math.PI / 2, 0, 0]} scale={[12, 12, 1]} />
           <Lightformer intensity={2} position={[6, 3, 0]} rotation={[0, -Math.PI / 2, 0]} scale={[10, 6, 1]} />
           <Lightformer intensity={2} position={[-6, 3, 0]} rotation={[0, Math.PI / 2, 0]} scale={[10, 6, 1]} />
         </Environment>
-        <hemisphereLight args={["#ffffff", "#d1d5db", 1.15]} />
+        <hemisphereLight args={["#ffffff", "#fdf8e7", 1.15]} />
         <ambientLight intensity={0.65} />
         <directionalLight
           castShadow
@@ -143,19 +143,19 @@ const WebGLViewer = ({
 
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]} receiveShadow>
           <planeGeometry args={[34, 34]} />
-          <meshStandardMaterial color="#e5e7eb" roughness={0.92} metalness={0} />
+          <meshStandardMaterial color="#fdf8e7" roughness={0.92} metalness={0} />
         </mesh>
         <ContactShadows position={[0, 0.01, 0]} opacity={0.52} scale={13} blur={2.2} far={5} />
         <CameraControls request={viewRequest} focusPosition={focusPosition} />
       </Canvas>
 
-      <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1 border border-white/10 bg-black/70 p-1.5 backdrop-blur md:bottom-5">
+      <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1 border border-slate-200/60 bg-white/60 p-1.5 backdrop-blur md:bottom-5">
         {views.map((view) => (
           <button
             key={view}
             type="button"
             onClick={() => setViewRequest((current) => ({ name: view, nonce: current.nonce + 1 }))}
-            className="px-2.5 py-2 text-[9px] uppercase tracking-[0.16em] text-white/65 transition hover:bg-[#efc400] hover:text-black sm:px-3 sm:text-[10px]"
+            className="px-2.5 py-2 text-[9px] uppercase tracking-[0.16em] text-slate-700 transition hover:bg-[#efc400] hover:text-black sm:px-3 sm:text-[10px]"
           >
             {view === "reset" ? "Reset view" : view}
           </button>

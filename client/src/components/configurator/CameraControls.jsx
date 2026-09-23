@@ -4,14 +4,14 @@ import { useEffect, useRef } from "react";
 import { Vector3 } from "three";
 
 const cameraViews = {
-  front: { position: [-8.5, 2.4, 0], target: [0, 1.1, 0] },
-  rear: { position: [8.5, 2.4, 0], target: [0, 1.1, 0] },
-  left: { position: [0, 2.7, 9.2], target: [0, 1.1, 0] },
-  right: { position: [0, 2.7, -9.2], target: [0, 1.1, 0] },
-  reset: { position: [7.3, 3.3, 8.3], target: [0.2, 1.15, 0] }
+  front: { position: [-4.0, 1.5, 0], target: [0, 1.1, 0] },
+  rear: { position: [4.0, 1.5, 0], target: [0, 1.1, 0] },
+  left: { position: [0, 1.6, 4.8], target: [0, 1.1, 0] },
+  right: { position: [0, 1.6, -4.8], target: [0, 1.1, 0] },
+  reset: { position: [3.8, 2.0, 4.5], target: [0.2, 1.15, 0] }
 };
 
-export const CameraControls = ({ request, focusPosition }) => {
+export const CameraControls = ({ request }) => {
   const controlsRef = useRef(null);
   const destination = useRef(new Vector3(...cameraViews.reset.position));
   const target = useRef(new Vector3(...cameraViews.reset.target));
@@ -24,13 +24,6 @@ export const CameraControls = ({ request, focusPosition }) => {
     target.current.set(...view.target);
     animating.current = true;
   }, [request]);
-
-  useEffect(() => {
-    if (!focusPosition) return;
-    target.current.set(...focusPosition);
-    destination.current.set(focusPosition[0] + 5, focusPosition[1] + 2.4, focusPosition[2] + 5);
-    animating.current = true;
-  }, [focusPosition]);
 
   useFrame(() => {
     if (!animating.current || !controlsRef.current) return;

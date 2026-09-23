@@ -181,7 +181,7 @@ export default function ConfiguratorPage() {
           <section className="h-[54vh] min-h-[360px] border-b border-white/10 lg:h-full lg:min-h-0 lg:border-b-0 lg:border-r">
             <Suspense
               fallback={
-                <div className="flex h-full items-center justify-center bg-[#131313] text-xs uppercase tracking-[0.25em] text-white/40">
+                <div className="flex h-full items-center justify-center bg-[#fdf8e7] text-xs uppercase tracking-[0.25em] text-slate-500">
                   Loading 3D Studio...
                 </div>
               }
