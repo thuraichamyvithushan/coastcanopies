@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchProducts, fetchQuotes, fetchVehicles, seedProductCoordinates } from "../../api/admin.js";
+import { fetchProducts, fetchQuotes, fetchVehicles } from "../../api/admin.js";
 import { AdminLayout } from "../../components/admin/AdminLayout.jsx";
 import { StatsGrid } from "../../components/admin/StatsGrid.jsx";
 import { formatCurrency } from "../../utils/currency.js";
@@ -7,8 +7,6 @@ import { useAuth } from "../../context/AuthContext.jsx";
 
 export default function AdminDashboardPage() {
   const { auth } = useAuth();
-  const [seeding, setSeeding] = useState(false);
-  const [seedMessage, setSeedMessage] = useState("");
   const [state, setState] = useState({
     vehicles: [],
     products: [],
@@ -16,19 +14,6 @@ export default function AdminDashboardPage() {
     error: "",
     loading: true
   });
-
-  const handleAutoSetCoordinates = async () => {
-    try {
-      setSeeding(true);
-      setSeedMessage("");
-      const res = await seedProductCoordinates(auth.token);
-      setSeedMessage(res.message);
-    } catch (err) {
-      setSeedMessage(`Error: ${err.message}`);
-    } finally {
-      setSeeding(false);
-    }
-  };
 
   useEffect(() => {
     const load = async () => {
@@ -94,31 +79,6 @@ export default function AdminDashboardPage() {
               }
             ]}
           />
-
-          {/* Quick Auto-Align Action Banner */}
-          <div className="mt-6 rounded-3xl border border-[#f9bf1a]/30 bg-[linear-gradient(90deg,rgba(249,191,26,0.1),rgba(0,0,0,0.4))] p-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h3 className="font-display text-xl uppercase tracking-[0.06em] text-[#f9bf1a]">
-                  ⚡ Auto-Set All 3D Product Coordinates
-                </h3>
-                <p className="mt-1 text-xs text-white/70">
-                  Automatically set standard 3D scale, position, rotation, and 6-vehicle compatibility JSON across all products in the database with 1 click.
-                </p>
-              </div>
-              <button
-                type="button"
-                disabled={seeding}
-                onClick={handleAutoSetCoordinates}
-                className="rounded-full bg-[#f9bf1a] px-6 py-3 font-semibold uppercase tracking-wider text-black transition hover:bg-[#ffd04a] disabled:opacity-60"
-              >
-                {seeding ? "Updating Database..." : "Auto-Align All Products"}
-              </button>
-            </div>
-            {seedMessage ? (
-              <p className="mt-3 font-mono text-xs text-emerald-300">{seedMessage}</p>
-            ) : null}
-          </div>
 
           <div className="mt-8 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
             <section className="panel rounded-[2rem] p-6">
