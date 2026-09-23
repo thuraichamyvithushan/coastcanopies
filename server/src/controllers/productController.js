@@ -3,7 +3,7 @@ import { clearCacheValue, getCacheValue, setCacheValue } from "../utils/cacheSto
 import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-const productTypes = new Set(["canopy", "module", "accessory"]);
+const productTypes = new Set(["canopy", "tray", "accessory"]);
 const defaultVector3 = (x, y, z) => ({ x, y, z });
 
 const sanitizeVector3 = (value, fallback) => {
