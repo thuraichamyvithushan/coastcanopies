@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   createVehicle,
   deleteVehicle,
@@ -28,8 +28,16 @@ const initialSelectedFiles = {
   modelFile: null
 };
 
+const formatAxes = (obj, fallback = { x: 1, y: 1, z: 1 }, suffix = "") => {
+  const x = Number(obj?.x ?? fallback.x).toFixed(2);
+  const y = Number(obj?.y ?? fallback.y).toFixed(2);
+  const z = Number(obj?.z ?? fallback.z).toFixed(2);
+  return `X: ${x}${suffix} · Y: ${y}${suffix} · Z: ${z}${suffix}`;
+};
+
 export default function VehicleManagerPage() {
   const { auth } = useAuth();
+  const formRef = useRef(null);
   const [vehicles, setVehicles] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [editingId, setEditingId] = useState("");
@@ -83,6 +91,23 @@ export default function VehicleManagerPage() {
       price: String(vehicle.price),
       canvasSize: JSON.stringify(vehicle.canvasSize, null, 2)
     });
+    formRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleQuickScale = async (vehicle, scaleFactor) => {
+    try {
+      setMessage("");
+      setError("");
+      const updatedScale = { x: scaleFactor, y: scaleFactor, z: scaleFactor };
+      await updateVehicle(auth.token, vehicle._id, {
+        ...vehicle,
+        modelScale: updatedScale
+      });
+      setMessage(`Updated ${vehicle.name} 3D scale to ${scaleFactor}x`);
+      loadVehicles();
+    } catch (scaleError) {
+      setError(scaleError.message);
+    }
   };
 
   const resetForm = () => {
@@ -159,7 +184,7 @@ export default function VehicleManagerPage() {
       description="Maintain vehicle platforms, GLB 3D models, and configurator alignment settings."
     >
       <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <form onSubmit={handleSubmit} className="panel rounded-[2rem] p-6">
+        <form ref={formRef} onSubmit={handleSubmit} className="panel rounded-[2rem] p-6">
           <h2 className="font-display text-3xl uppercase tracking-[0.08em] text-white">
             {editingId ? "Edit Vehicle" : "Add Vehicle"}
           </h2>
@@ -246,35 +271,80 @@ export default function VehicleManagerPage() {
         </form>
 
         <section className="panel rounded-[2rem] p-6">
-          <h2 className="font-display text-3xl uppercase tracking-[0.08em] text-white">Current Vehicles</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-3xl uppercase tracking-[0.08em] text-white">Current Vehicles</h2>
+            <span className="text-xs uppercase tracking-[0.2em] text-[#f9bf1a] font-semibold">{vehicles.length} Models</span>
+          </div>
+          <p className="mt-1 text-xs text-white/50">Easily view and adjust vehicle 3D sizes and position coordinates.</p>
+
           <div className="mt-6 space-y-4">
             {vehicles.map((vehicle) => (
-              <div key={vehicle._id} className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
+              <div key={vehicle._id} className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 transition hover:border-white/20">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <h3 className="font-display text-2xl uppercase tracking-[0.06em] text-white">{vehicle.name}</h3>
-                    <p className="mt-2 text-sm text-white/55">
+                    <p className="mt-1 text-sm text-white/55">
                       {vehicle.brand} • {vehicle.slug}
                     </p>
-                    <p className="mt-2 text-sm text-white/45">
-                      {vehicle.modelUrl ? "3D model attached" : "Procedural 3D fallback"}
+                    <p className="mt-1.5 text-xs uppercase tracking-[0.18em] text-white/40">
+                      {vehicle.modelUrl ? "✓ 3D Model Attached" : "Procedural 3D Fallback"}
                     </p>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => handleEdit(vehicle)}
-                      className="rounded-full border border-[#f9bf1a]/50 px-4 py-2 text-[#f9bf1a]"
+                      className="rounded-full border border-[#f9bf1a]/50 bg-[#f9bf1a]/10 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#f9bf1a] hover:bg-[#f9bf1a] hover:text-black transition"
                     >
-                      Edit
+                      Adjust Controls
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDelete(vehicle._id)}
-                      className="rounded-full border border-red-500/30 px-4 py-2 text-red-200"
+                      className="rounded-full border border-red-500/30 px-3 py-2 text-xs text-red-300 hover:bg-red-500/10 transition"
                     >
                       Delete
                     </button>
+                  </div>
+                </div>
+
+                {/* Inline 3D Size Display & Quick Presets */}
+                <div className="mt-4 rounded-2xl border border-white/10 bg-black/40 p-3.5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-[#f9bf1a] font-semibold">3D Vehicle Scale (Size)</span>
+                      <p className="mt-0.5 font-mono text-xs text-white/90">
+                        {formatAxes(vehicle.modelScale, { x: 1, y: 1, z: 1 })}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-white/40 uppercase tracking-wider">Quick Scale:</span>
+                      {[0.5, 0.8, 1.0, 1.2, 1.5, 2.0].map((scaleFactor) => {
+                        const isSelected =
+                          Number(vehicle.modelScale?.x || 1) === scaleFactor &&
+                          Number(vehicle.modelScale?.y || 1) === scaleFactor &&
+                          Number(vehicle.modelScale?.z || 1) === scaleFactor;
+                        return (
+                          <button
+                            key={scaleFactor}
+                            type="button"
+                            onClick={() => handleQuickScale(vehicle, scaleFactor)}
+                            title={`Quick set scale to ${scaleFactor}x`}
+                            className={`rounded-lg border px-2.5 py-1 font-mono text-[11px] font-semibold transition ${
+                              isSelected
+                                ? "border-[#f9bf1a] bg-[#f9bf1a] text-black"
+                                : "border-white/15 bg-white/5 text-white/70 hover:border-[#f9bf1a] hover:text-white"
+                            }`}
+                          >
+                            {scaleFactor}x
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="mt-3 border-t border-white/10 pt-2.5 flex flex-wrap items-center justify-between text-[11px] text-white/50">
+                    <span>Position: <strong className="font-mono text-white/80">{formatAxes(vehicle.modelPosition, { x: 0, y: 0, z: 0 }, "m")}</strong></span>
+                    <span>Rotation: <strong className="font-mono text-white/80">{formatAxes(vehicle.modelRotation, { x: 0, y: 0, z: 0 }, "°")}</strong></span>
                   </div>
                 </div>
               </div>
