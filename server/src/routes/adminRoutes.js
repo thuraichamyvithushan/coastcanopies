@@ -3,6 +3,7 @@ import { loginAdmin } from "../controllers/authController.js";
 import {
   createProduct,
   deleteProduct,
+  seedCoordinates,
   updateProduct
 } from "../controllers/productController.js";
 import { getQuotes, updateQuoteStatus } from "../controllers/quoteController.js";
@@ -32,6 +33,7 @@ adminRouter.post("/vehicles", createVehicle);
 adminRouter.put("/vehicles/:id", updateVehicle);
 adminRouter.delete("/vehicles/:id", deleteVehicle);
 adminRouter.post("/products", createProduct);
+adminRouter.post("/products/seed-coordinates", seedCoordinates);
 adminRouter.put("/products/:id", updateProduct);
 adminRouter.delete("/products/:id", deleteProduct);
 adminRouter.get("/quotes", getQuotes);

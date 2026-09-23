@@ -156,6 +156,12 @@ export const createProduct = (token, payload) =>
     body: JSON.stringify(payload)
   });
 
+export const seedProductCoordinates = (token) =>
+  request("/api/admin/products/seed-coordinates", {
+    method: "POST",
+    token
+  });
+
 export const updateProduct = (token, id, payload) =>
   request(`/api/admin/products/${id}`, {
     method: "PUT",

@@ -128,3 +128,67 @@ export const deleteProduct = asyncHandler(async (req, res) => {
   clearCacheValue("products:");
   res.status(204).send();
 });
+
+export const seedCoordinates = asyncHandler(async (req, res) => {
+  const products = await Product.find({});
+
+  const positionsByCategory = {
+    canopy: [
+      { vehicleSlug: "toyota-hilux", x: 420, y: 300, width: 310, height: 170 },
+      { vehicleSlug: "ford-ranger", x: 430, y: 305, width: 320, height: 175 },
+      { vehicleSlug: "isuzu-d-max", x: 415, y: 298, width: 305, height: 168 },
+      { vehicleSlug: "nissan-navara", x: 410, y: 295, width: 300, height: 165 },
+      { vehicleSlug: "mitsubishi-triton", x: 415, y: 298, width: 305, height: 168 },
+      { vehicleSlug: "vw-amarok", x: 435, y: 308, width: 325, height: 178 }
+    ],
+    roof: [
+      { vehicleSlug: "toyota-hilux", x: 420, y: 140, width: 300, height: 60 },
+      { vehicleSlug: "ford-ranger", x: 430, y: 145, width: 310, height: 60 },
+      { vehicleSlug: "isuzu-d-max", x: 415, y: 138, width: 295, height: 58 },
+      { vehicleSlug: "nissan-navara", x: 410, y: 135, width: 290, height: 58 },
+      { vehicleSlug: "mitsubishi-triton", x: 415, y: 138, width: 295, height: 58 },
+      { vehicleSlug: "vw-amarok", x: 435, y: 148, width: 315, height: 62 }
+    ],
+    internal: [
+      { vehicleSlug: "toyota-hilux", x: 450, y: 340, width: 250, height: 120 },
+      { vehicleSlug: "ford-ranger", x: 460, y: 345, width: 260, height: 125 },
+      { vehicleSlug: "isuzu-d-max", x: 445, y: 338, width: 245, height: 118 },
+      { vehicleSlug: "nissan-navara", x: 440, y: 335, width: 240, height: 115 },
+      { vehicleSlug: "mitsubishi-triton", x: 445, y: 338, width: 245, height: 118 },
+      { vehicleSlug: "vw-amarok", x: 465, y: 348, width: 265, height: 128 }
+    ]
+  };
+
+  let updatedCount = 0;
+
+  for (const product of products) {
+    const isCanopy = product.type === "canopy" || product.slug.includes("canopy");
+    const isRoof = ["roof-rack", "rooftop-tent", "solar-panel", "awning"].some((s) => product.slug.includes(s));
+
+    const modelScale = { x: 1, y: 1, z: 1 };
+    const modelRotation = { x: 0, y: 0, z: 0 };
+    const modelPosition = isCanopy
+      ? { x: 1.12, y: 1.65, z: 0 }
+      : isRoof
+        ? { x: 1.10, y: 2.48, z: 0 }
+        : { x: 1.55, y: 1.42, z: -0.5 };
+
+    const positions = isCanopy
+      ? positionsByCategory.canopy
+      : isRoof
+        ? positionsByCategory.roof
+        : positionsByCategory.internal;
+
+    product.modelScale = modelScale;
+    product.modelPosition = modelPosition;
+    product.modelRotation = modelRotation;
+    product.positions = positions;
+
+    await product.save();
+    updatedCount++;
+  }
+
+  clearCacheValue("products:");
+  res.json({ message: `Successfully updated 3D coordinates and positions JSON for ${updatedCount} products`, count: updatedCount });
+});
+
