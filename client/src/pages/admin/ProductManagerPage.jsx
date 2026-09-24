@@ -235,12 +235,12 @@ export default function ProductManagerPage({ managedType = "canopy" }) {
                 <span className="text-xs font-semibold uppercase tracking-[0.22em] text-[#f9bf1a] block">
                   Manual 3D Product Scale (Size Multiplier)
                 </span>
-                <p className="mt-1 text-xs text-white/50">Manually type scale multipliers for Width, Height, and Length (Default = 1.0)</p>
+                <p className="mt-1 text-xs text-white/50">Manually type scale multipliers for Length, Height, and Width (Default = 1.0)</p>
               </div>
               <div className="grid grid-cols-3 gap-3">
-                <Field label="Width Scale (X)" name="scaleX" type="number" step="0.01" value={form.scaleX} onChange={handleChange} />
+                <Field label="Length Scale (X)" name="scaleX" type="number" step="0.01" value={form.scaleX} onChange={handleChange} />
                 <Field label="Height Scale (Y)" name="scaleY" type="number" step="0.01" value={form.scaleY} onChange={handleChange} />
-                <Field label="Length Scale (Z)" name="scaleZ" type="number" step="0.01" value={form.scaleZ} onChange={handleChange} />
+                <Field label="Width Scale (Z)" name="scaleZ" type="number" step="0.01" value={form.scaleZ} onChange={handleChange} />
               </div>
 
               <div>
@@ -249,9 +249,9 @@ export default function ProductManagerPage({ managedType = "canopy" }) {
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-3">
-                <Field label="Position X" name="posX" type="number" step="0.01" value={form.posX} onChange={handleChange} />
-                <Field label="Position Y" name="posY" type="number" step="0.01" value={form.posY} onChange={handleChange} />
-                <Field label="Position Z" name="posZ" type="number" step="0.01" value={form.posZ} onChange={handleChange} />
+                <Field label="Position X (Length)" name="posX" type="number" step="0.01" value={form.posX} onChange={handleChange} />
+                <Field label="Position Y (Height)" name="posY" type="number" step="0.01" value={form.posY} onChange={handleChange} />
+                <Field label="Position Z (Width)" name="posZ" type="number" step="0.01" value={form.posZ} onChange={handleChange} />
               </div>
 
               <div>
