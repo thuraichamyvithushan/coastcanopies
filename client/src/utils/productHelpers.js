@@ -1,4 +1,4 @@
-const fallbackPosition = { x: 470, y: 170, width: 310, height: 170 };
+const fallbackPosition = { x: 470, y: 170, z: 0, width: 310, height: 170 };
 
 export const hasProductPositionForVehicle = (product, vehicleSlug) =>
   Boolean(vehicleSlug && product?.positions?.some((position) => position.vehicleSlug === vehicleSlug));

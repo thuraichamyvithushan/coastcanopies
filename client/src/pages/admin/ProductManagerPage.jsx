@@ -28,7 +28,7 @@ const initialForm = {
   price: "0",
   description: "",
   positions:
-    '[\n  {\n    "vehicleSlug": "toyota-hilux",\n    "x": 470,\n    "y": 170,\n    "width": 310,\n    "height": 170\n  }\n]'
+    '[\n  {\n    "vehicleSlug": "toyota-hilux",\n    "x": 470,\n    "y": 170,\n    "z": 0,\n    "width": 310,\n    "height": 170\n  }\n]'
 };
 
 const initialSelectedFiles = {
@@ -284,7 +284,7 @@ export default function ProductManagerPage({ managedType = "canopy" }) {
               name="positions"
               value={form.positions}
               onChange={handleChange}
-              hint="Array of vehicle placement objects."
+              hint='Array of { vehicleSlug, x, y, z, width, height } objects. z = depth offset (optional, default 0).'
             />
           </div>
 
