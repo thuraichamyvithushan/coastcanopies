@@ -9,6 +9,5 @@ export const calculateOptionalExtras = (accessories, selectedIds) =>
     .filter((item) => !item.included && selectedIds.includes(item.id))
     .reduce((total, item) => total + Number(item.price || 0), 0);
 
-export const calculateGrandTotal = (basePrice, optionalExtras) =>
-  Number(basePrice || 0) + Number(optionalExtras || 0);
-
+export const calculateGrandTotal = (vehiclePrice, selectedProductsTotal) =>
+  Number(vehiclePrice || 0) + Number(selectedProductsTotal || 0);

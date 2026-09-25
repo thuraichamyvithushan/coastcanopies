@@ -155,10 +155,12 @@ export const ConfiguratorSidebar = ({ configurator, summaryProps, loading }) => 
         <button type="button" onClick={() => setDrawerCollapsed((current) => !current)} className="mb-3 w-full border border-white/20 px-3 py-2 text-xs text-white/70 lg:hidden">
           {drawerCollapsed ? "Open configurator" : "Hide configurator"}
         </button>
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-[10px] uppercase tracking-[0.22em] text-white/45">Current Total</span>
-          <span className="text-lg font-semibold text-[#efc400]">{formatNzd(configurator.grandTotal)}</span>
-        </div>
+        {configurator.selectedVehicle ? (
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-[10px] uppercase tracking-[0.22em] text-white/45">Current Total</span>
+            <span className="text-lg font-semibold text-[#efc400]">{formatNzd(configurator.grandTotal)}</span>
+          </div>
+        ) : null}
       </div>
     </aside>
   );

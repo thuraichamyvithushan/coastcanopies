@@ -159,16 +159,18 @@ export default function ConfiguratorPage() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-6 border-t border-white/10 pt-3 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
-              <div>
-                <p className="text-[9px] uppercase tracking-[0.2em] text-white/35">Base Price</p>
-                <p className="mt-1 text-sm font-semibold text-white">{formatNzd(productConfig.basePrice)}</p>
+            {configurator.selectedVehicle ? (
+              <div className="flex items-center gap-6 border-t border-white/10 pt-3 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
+                <div>
+                  <p className="text-[9px] uppercase tracking-[0.2em] text-white/35">Vehicle Price</p>
+                  <p className="mt-1 text-sm font-semibold text-white">{formatNzd(configurator.selectedVehicle.price)}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] uppercase tracking-[0.2em] text-white/35">Current Total</p>
+                  <p className="mt-1 text-lg font-semibold text-[#efc400]">{formatNzd(configurator.grandTotal)}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-[9px] uppercase tracking-[0.2em] text-white/35">Current Total</p>
-                <p className="mt-1 text-lg font-semibold text-[#efc400]">{formatNzd(configurator.grandTotal)}</p>
-              </div>
-            </div>
+            ) : null}
           </div>
         </header>
 

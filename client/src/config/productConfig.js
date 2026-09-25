@@ -21,7 +21,6 @@ export const productConfig = {
   id: "premium-canopy-package",
   name: "Premium Canopy Package",
   brand: "Coast Canopies",
-  basePrice: 32500,
   currency: "NZD",
   standardInclusionCount: 26,
   description:

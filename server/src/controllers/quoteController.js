@@ -8,8 +8,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 const premiumPackage = {
   id: "premium-canopy-package",
-  name: "Premium Canopy Package",
-  price: 32500
+  name: "Premium Canopy Package"
 };
 
 const snapshotItem = (item) => ({
@@ -70,36 +69,28 @@ export const createQuote = asyncHandler(async (req, res) => {
       throw new ApiError(400, "One or more selected products were not found");
     }
 
-    let selectedVehicle = null;
-    if (vehicleId) {
-      if (!mongoose.isValidObjectId(vehicleId)) {
-        throw new ApiError(400, "Selected vehicle is invalid");
-      }
-      selectedVehicle = await Vehicle.findById(vehicleId);
-      if (!selectedVehicle) {
-        throw new ApiError(400, "Selected vehicle was not found");
-      }
+    if (!vehicleId || !mongoose.isValidObjectId(vehicleId)) {
+      throw new ApiError(400, "Selected vehicle is invalid");
+    }
+    const selectedVehicle = await Vehicle.findById(vehicleId);
+    if (!selectedVehicle) {
+      throw new ApiError(400, "Selected vehicle was not found");
     }
 
     const selectedModules = selectedExtras.filter((item) => item.type === "module");
     const selectedAccessories = selectedExtras.filter((item) => item.type !== "module");
     const optionalExtrasTotal = selectedExtras.reduce((total, item) => total + item.price, 0);
     const quote = await Quote.create({
-      vehicle: selectedVehicle ? { ...snapshotItem(selectedVehicle), price: 0 } : {
-        name: "Coast Canopies Base Vehicle",
-        slug: "base-vehicle",
-        price: 0,
-        svg: ""
-      },
+      vehicle: snapshotItem(selectedVehicle),
       baseSystem: {
         name: premiumPackage.name,
         slug: premiumPackage.id,
-        price: premiumPackage.price,
+        price: 0,
         svg: ""
       },
       modules: selectedModules.map(snapshotItem),
       accessories: selectedAccessories.map(snapshotItem),
-      totalPrice: premiumPackage.price + optionalExtrasTotal,
+      totalPrice: selectedVehicle.price + optionalExtrasTotal,
       customerInfo: validateCustomerInfo(customerInfo)
     });
 

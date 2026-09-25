@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { productConfig } from "../config/productConfig.js";
 import { calculateGrandTotal, calculateOptionalExtras } from "../utils/pricing.js";
 
 export const useConfigurator = (accessories = [], vehicles = []) => {
@@ -68,7 +67,9 @@ export const useConfigurator = (accessories = [], vehicles = []) => {
     () => calculateOptionalExtras(accessories, selectedIds),
     [accessories, selectedIds]
   );
-  const grandTotal = calculateGrandTotal(productConfig.basePrice, optionalExtras);
+  const grandTotal = selectedVehicle
+    ? calculateGrandTotal(selectedVehicle.price, optionalExtras)
+    : null;
   const selectedOptionalExtras = accessories.filter(
     (item) => !item.included && selectedIds.includes(item.id)
   );

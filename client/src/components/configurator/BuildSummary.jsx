@@ -26,11 +26,11 @@ export const BuildSummary = ({
 
       <dl className="mt-5 space-y-3 text-sm">
         <div className="flex items-center justify-between gap-4 text-white/60">
-          <dt>Base Product</dt>
-          <dd className="text-white">{formatNzd(productConfig.basePrice)}</dd>
+          <dt>Vehicle</dt>
+          <dd className="text-white">{formatNzd(selectedVehicle?.price)}</dd>
         </div>
         <div className="flex items-center justify-between gap-4 text-white/60">
-          <dt>Optional Extras</dt>
+          <dt>Selected Products</dt>
           <dd className="text-white">{formatNzd(optionalExtras)}</dd>
         </div>
         <div className="border-t border-white/10 pt-3">
@@ -42,7 +42,7 @@ export const BuildSummary = ({
       </dl>
 
       <div className="mt-4 border-t border-white/10 pt-4">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-white/40">Selected Optional Extras</p>
+        <p className="text-[10px] uppercase tracking-[0.2em] text-white/40">Selected Products</p>
         {selectedOptionalExtras.length ? (
           <ul className="mt-2 space-y-2 text-sm text-white/65">
             {selectedOptionalExtras.map((item) => (
@@ -53,7 +53,7 @@ export const BuildSummary = ({
             ))}
           </ul>
         ) : (
-          <p className="mt-2 text-sm text-white/35">No paid extras selected.</p>
+          <p className="mt-2 text-sm text-white/35">No products selected.</p>
         )}
       </div>
     </div>

@@ -1,5 +1,4 @@
 import { productConfig } from "../../config/productConfig.js";
-import { formatNzd } from "../../utils/pricing.js";
 
 export const SpecificationsModal = ({ open, onClose }) => {
   if (!open) return null;
@@ -18,7 +17,6 @@ export const SpecificationsModal = ({ open, onClose }) => {
             <h2 id="specification-title" className="mt-2 text-2xl font-semibold md:text-3xl">
               {productConfig.name} Specification
             </h2>
-            <p className="mt-2 text-sm text-white/50">Included from {formatNzd(productConfig.basePrice)}</p>
           </div>
           <button
             type="button"
@@ -49,4 +47,3 @@ export const SpecificationsModal = ({ open, onClose }) => {
     </div>
   );
 };
-
