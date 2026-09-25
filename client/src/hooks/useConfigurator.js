@@ -9,6 +9,8 @@ export const useConfigurator = (accessories = [], vehicles = []) => {
   const [awningState, setAwningState] = useState("closed");
   const [focusedAccessoryId, setFocusedAccessoryId] = useState("");
   const [cameraResetKey, setCameraResetKey] = useState(0);
+  const [previewVersion, setPreviewVersion] = useState(0);
+  const [pendingAdvance, setPendingAdvance] = useState(null);
 
   const selectedVehicle = vehicles.find((item) => String(item._id) === selectedVehicleId) || null;
   const canopies = accessories.filter((item) => item.adminProduct?.type === "canopy");
@@ -25,7 +27,10 @@ export const useConfigurator = (accessories = [], vehicles = []) => {
   };
 
   const setActiveCategory = (category) => {
-    if (canAccessCategory(category)) setCategory(category);
+    if (canAccessCategory(category)) {
+      setCategory(category);
+      setPendingAdvance(null);
+    }
   };
 
   const selectVehicle = (vehicle) => {
@@ -36,8 +41,10 @@ export const useConfigurator = (accessories = [], vehicles = []) => {
       setRooftopTentState("closed");
       setAwningState("closed");
       setCameraResetKey((value) => value + 1);
+      setPreviewVersion((value) => value + 1);
     }
-    setCategory("Tray");
+    setCategory("Vehicle");
+    setPendingAdvance({ step: "Vehicle" });
   };
 
   const selectTray = (tray) => {
@@ -47,8 +54,10 @@ export const useConfigurator = (accessories = [], vehicles = []) => {
       setFocusedAccessoryId("");
       setRooftopTentState("closed");
       setAwningState("closed");
+      setPreviewVersion((value) => value + 1);
     }
-    setCategory("Canopy");
+    setCategory("Tray");
+    setPendingAdvance({ step: "Tray" });
   };
 
   const selectCanopy = (canopy) => {
@@ -59,8 +68,10 @@ export const useConfigurator = (accessories = [], vehicles = []) => {
       setFocusedAccessoryId("");
       setRooftopTentState("closed");
       setAwningState("closed");
+      setPreviewVersion((value) => value + 1);
     }
-    setCategory("Accessories");
+    setCategory("Canopy");
+    setPendingAdvance({ step: "Canopy" });
   };
 
   const optionalExtras = useMemo(
@@ -78,11 +89,14 @@ export const useConfigurator = (accessories = [], vehicles = []) => {
     const isBaseProduct = accessory.adminProduct?.type === "canopy" || accessory.adminProduct?.type === "tray";
     if (!selectedVehicle || !selectedTray || !selectedCanopy || accessory.included || isBaseProduct) return;
 
+    setPendingAdvance(null);
+
     setSelectedIds((current) =>
       current.includes(accessory.id)
         ? current.filter((id) => id !== accessory.id)
         : [...current, accessory.id]
     );
+    setPreviewVersion((value) => value + 1);
   };
 
   const resetBuild = () => {
@@ -93,6 +107,8 @@ export const useConfigurator = (accessories = [], vehicles = []) => {
     setAwningState("closed");
     setFocusedAccessoryId("");
     setCameraResetKey((value) => value + 1);
+    setPreviewVersion((value) => value + 1);
+    setPendingAdvance(null);
   };
 
   return {
@@ -112,6 +128,8 @@ export const useConfigurator = (accessories = [], vehicles = []) => {
     cameraResetKey,
     focusedAccessoryId,
     grandTotal,
+    previewVersion,
+    pendingAdvance,
     optionalExtras,
     rooftopTentState,
     selectedIds,

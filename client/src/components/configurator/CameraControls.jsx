@@ -16,7 +16,12 @@ export const CameraControls = ({ request }) => {
   const destination = useRef(new Vector3(...cameraViews.reset.position));
   const target = useRef(new Vector3(...cameraViews.reset.target));
   const animating = useRef(false);
-  const { camera } = useThree();
+  const { camera, size } = useThree();
+
+  useEffect(() => {
+    camera.fov = size.width <= 360 ? 42 : 36;
+    camera.updateProjectionMatrix();
+  }, [camera, size.width]);
 
   useEffect(() => {
     const view = cameraViews[request?.name] || cameraViews.reset;
@@ -54,4 +59,3 @@ export const CameraControls = ({ request }) => {
     />
   );
 };
-

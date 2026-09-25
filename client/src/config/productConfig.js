@@ -18,8 +18,7 @@ export const categoryOrder = [
 ];
 
 export const productConfig = {
-  id: "premium-canopy-package",
-  name: "Premium Canopy Package",
+  name: "Custom Canopy Build",
   brand: "Coast Canopies",
   currency: "NZD",
   standardInclusionCount: 26,

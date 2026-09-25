@@ -1,1 +1,1 @@
-export const SiteShell = ({ children }) => <main className="min-h-screen">{children}</main>;
+export const SiteShell = ({ children }) => <main className="mobile-flat min-h-screen">{children}</main>;

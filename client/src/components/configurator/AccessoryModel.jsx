@@ -1,5 +1,6 @@
 import { modelTransforms } from "../../config/modelTransforms.js";
 import { ModelAsset } from "./ModelAsset.jsx";
+import { previewKey } from "../../utils/previewKey.js";
 
 const multiplyScale = (base, instance = [1, 1, 1]) =>
   base.map((value, index) => value * instance[index]);
@@ -9,7 +10,7 @@ const vectorToArray = (value, fallback) =>
 
 const degreesToRadians = (values) => values.map((value) => (value * Math.PI) / 180);
 
-export const AccessoryModel = ({ accessory, visible, state, override }) => {
+export const AccessoryModel = ({ accessory, visible, state, override, previewVersion, onModelStatusChange }) => {
   if (!visible) return null;
 
   const transform = modelTransforms[accessory.transformId || accessory.id] || {
@@ -53,7 +54,9 @@ export const AccessoryModel = ({ accessory, visible, state, override }) => {
       <ModelAsset
         key={`${accessory.id}-${index}-${modelUrl}`}
         url={modelUrl}
-        name={accessory.name}
+        modelType={override?.type || "accessory"}
+        previewKey={previewKey(previewVersion, override?.type || "accessory", accessory.id)}
+        onStatusChange={onModelStatusChange}
         position={position}
         rotation={rotation}
         scale={scale}

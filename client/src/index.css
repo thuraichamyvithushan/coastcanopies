@@ -92,6 +92,76 @@ a {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
+@media (max-width: 1023px) {
+  .builder-preview {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    height: clamp(400px, 60vh, 620px);
+    height: clamp(400px, 60svh, 620px);
+    align-self: start;
+  }
+
+  .builder-preview-summary {
+    position: relative;
+  }
+
+  .mobile-builder-sidebar {
+    scroll-margin-top: clamp(400px, 60vh, 620px);
+    scroll-margin-top: clamp(400px, 60svh, 620px);
+  }
+
+  .mobile-builder-sidebar-summary {
+    scroll-margin-top: 0;
+  }
+}
+
+@media (max-width: 639px) {
+  .builder-preview {
+    height: clamp(320px, 56vh, 520px);
+    height: clamp(320px, 56svh, 520px);
+  }
+
+  .mobile-builder-sidebar {
+    scroll-margin-top: clamp(320px, 56vh, 520px);
+    scroll-margin-top: clamp(320px, 56svh, 520px);
+  }
+
+  .mobile-builder-sidebar-summary {
+    scroll-margin-top: 0;
+  }
+}
+
+@media (max-width: 1023px) and (max-height: 500px) {
+  .builder-preview {
+    height: 240px;
+  }
+
+  .mobile-builder-sidebar {
+    scroll-margin-top: 240px;
+  }
+
+  .mobile-builder-sidebar-summary {
+    scroll-margin-top: 0;
+  }
+}
+
+@media (max-width: 1023px) {
+  body,
+  .mobile-flat .font-display {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .mobile-flat [class*="rounded"] {
+    border-radius: 0 !important;
+  }
+
+  .mobile-flat :is(button, a, input, select, textarea):focus-visible {
+    outline: 2px solid #efc400;
+    outline-offset: 2px;
+  }
+}
+
 @media (min-width: 1280px) {
   .configurator-steps-scroll {
     scrollbar-width: thin;

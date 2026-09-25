@@ -6,11 +6,6 @@ import { sendQuoteNotification } from "../utils/mailer.js";
 import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-const premiumPackage = {
-  id: "premium-canopy-package",
-  name: "Premium Canopy Package"
-};
-
 const snapshotItem = (item) => ({
   referenceId: item._id,
   name: item.name,
@@ -41,8 +36,7 @@ const productSupportsVehicle = (product, vehicleSlug) =>
 
 export const createQuote = asyncHandler(async (req, res) => {
   const {
-    packageId,
-    selectedOptionalExtraIds = [],
+    selectedOptionalExtraIds,
     vehicleId,
     baseSystemId,
     moduleIds = [],
@@ -50,7 +44,7 @@ export const createQuote = asyncHandler(async (req, res) => {
     customerInfo
   } = req.body;
 
-  if (packageId === premiumPackage.id) {
+  if (selectedOptionalExtraIds !== undefined) {
     if (!Array.isArray(selectedOptionalExtraIds)) {
       throw new ApiError(400, "Selected products must be an array");
     }
@@ -83,8 +77,8 @@ export const createQuote = asyncHandler(async (req, res) => {
     const quote = await Quote.create({
       vehicle: snapshotItem(selectedVehicle),
       baseSystem: {
-        name: premiumPackage.name,
-        slug: premiumPackage.id,
+        name: "Custom Canopy Build",
+        slug: "custom-canopy-build",
         price: 0,
         svg: ""
       },
@@ -98,7 +92,8 @@ export const createQuote = asyncHandler(async (req, res) => {
 
     return res.status(201).json({
       message: "Quote request submitted successfully",
-      quoteId: quote._id
+      quoteId: quote._id,
+      totalPrice: quote.totalPrice
     });
   }
 
@@ -164,13 +159,21 @@ export const createQuote = asyncHandler(async (req, res) => {
 
   res.status(201).json({
     message: "Quote request submitted successfully",
-    quoteId: quote._id
+    quoteId: quote._id,
+    totalPrice: quote.totalPrice
   });
 });
 
 export const getQuotes = asyncHandler(async (_req, res) => {
   const quotes = await Quote.find().sort({ createdAt: -1 });
-  res.json(quotes);
+  res.json(quotes.map((quote) => {
+    const result = quote.toObject();
+    if (!result.baseSystem?.referenceId && result.baseSystem?.price === 0) {
+      result.baseSystem.name = "Custom Canopy Build";
+      result.baseSystem.slug = "custom-canopy-build";
+    }
+    return result;
+  }));
 });
 
 export const updateQuoteStatus = asyncHandler(async (req, res) => {

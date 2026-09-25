@@ -11,15 +11,14 @@ export const BuildSummary = ({
   grandTotal,
   customer,
   onCustomerChange,
-  onGenerateSpecification,
   onRequestQuote,
   onReset,
   submitting
 }) => (
   <div>
-    <div className="border border-white/10 bg-[#0d0d0d] p-4">
+    <div className="lg:border lg:border-white/10 lg:bg-[#0d0d0d] lg:p-4">
       <p className="text-[10px] uppercase tracking-[0.25em] text-[#efc400]">Build Summary</p>
-      <h2 className="mt-2 text-xl font-semibold text-white">{productConfig.name}</h2>
+      <h2 className="mt-2 text-lg font-semibold text-white sm:text-xl">{productConfig.name}</h2>
       <p className="mt-3 text-sm text-white/65">Vehicle: {selectedVehicle?.name}</p>
       <p className="mt-1 text-sm text-white/65">Tray: {selectedTray?.name}</p>
       <p className="mt-1 text-sm text-white/65">Canopy: {selectedCanopy?.name}</p>
@@ -47,8 +46,8 @@ export const BuildSummary = ({
           <ul className="mt-2 space-y-2 text-sm text-white/65">
             {selectedOptionalExtras.map((item) => (
               <li key={item.id} className="flex justify-between gap-3">
-                <span>{item.name}</span>
-                <span>{formatNzd(item.price)}</span>
+                <span className="min-w-0">{item.name}</span>
+                <span className="shrink-0">{formatNzd(item.price)}</span>
               </li>
             ))}
           </ul>
@@ -62,13 +61,6 @@ export const BuildSummary = ({
       <CustomerForm value={customer} onChange={onCustomerChange} />
 
       <div className="grid gap-2">
-        <button
-          type="button"
-          onClick={onGenerateSpecification}
-          className="border border-white/20 px-4 py-3 text-xs uppercase tracking-[0.18em] text-white transition hover:border-[#efc400] hover:text-[#efc400]"
-        >
-          Generate Specification
-        </button>
         <button
           type="submit"
           disabled={submitting}

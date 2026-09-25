@@ -1,13 +1,13 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchProducts, fetchVehicles, submitQuote } from "../api/admin.js";
 import { ConfiguratorSidebar } from "../components/configurator/ConfiguratorSidebar.jsx";
-import { SpecificationsModal } from "../components/configurator/SpecificationsModal.jsx";
 import { SiteShell } from "../components/layout/SiteShell.jsx";
 import { productConfig } from "../config/productConfig.js";
 import { useConfigurator } from "../hooks/useConfigurator.js";
 import { formatNzd } from "../utils/pricing.js";
 import { preloadModel } from "../utils/preloadModel.js";
+import { previewKey } from "../utils/previewKey.js";
 
 const Viewer3D = lazy(() =>
   import("../components/configurator/Viewer3D.jsx").then((module) => ({ default: module.Viewer3D }))
@@ -26,6 +26,9 @@ const productTypeCategory = {
   tray: "Tray",
   accessory: "Accessories"
 };
+
+const buildSteps = ["Vehicle", "Tray", "Canopy", "Accessories", "Summary"];
+const previewDisplayDelayMs = 900;
 
 const toAdminAccessory = (product) => {
   const template = productConfig.accessories.find((accessory) => {
@@ -57,9 +60,43 @@ export default function ConfiguratorPage() {
   const [loading, setLoading] = useState(true);
   const configurator = useConfigurator(adminAccessories, adminVehicles);
   const [customer, setCustomer] = useState(initialCustomer);
-  const [specificationsOpen, setSpecificationsOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [modelStatuses, setModelStatuses] = useState({});
+
+  const handleModelStatusChange = useCallback((key, status) => {
+    setModelStatuses((current) => current[key] === status ? current : { ...current, [key]: status });
+  }, []);
+
+  const modelStatus = (type, id) => modelStatuses[previewKey(configurator.previewVersion, type, id)] || "loading";
+  const selectedAccessories = configurator.selectedOptionalExtras.filter(
+    (item) => item.adminProduct?.type !== "tray" && item.adminProduct?.type !== "canopy"
+  );
+  const accessoryStatuses = selectedAccessories.map((item) =>
+    modelStatus(item.adminProduct?.type || "accessory", item.id)
+  );
+  const accessoriesPreviewStatus = !accessoryStatuses.length ? "ready"
+    : accessoryStatuses.includes("error") ? "error"
+      : accessoryStatuses.includes("missing") ? "missing"
+        : accessoryStatuses.every((status) => status === "ready") ? "ready" : "loading";
+  const previewStatuses = {
+    Vehicle: configurator.selectedVehicle ? modelStatus("vehicle", configurator.selectedVehicle._id) : "unselected",
+    Tray: configurator.selectedTray ? modelStatus("tray", configurator.selectedTray.id) : "unselected",
+    Canopy: configurator.selectedCanopy ? modelStatus("canopy", configurator.selectedCanopy.id) : "unselected",
+    Accessories: accessoriesPreviewStatus
+  };
+  const pendingStep = configurator.pendingAdvance?.step;
+  const nextStepIndex = buildSteps.indexOf(pendingStep) + 1;
+  const previewsReadyToAdvance = nextStepIndex > 0 &&
+    buildSteps.slice(0, nextStepIndex).every((step) => previewStatuses[step] === "ready");
+
+  useEffect(() => {
+    if (!pendingStep || configurator.activeCategory !== pendingStep || !previewsReadyToAdvance) return;
+    const timeout = window.setTimeout(() => {
+      configurator.setActiveCategory(buildSteps[nextStepIndex]);
+    }, previewDisplayDelayMs);
+    return () => window.clearTimeout(timeout);
+  }, [configurator.pendingAdvance, configurator.activeCategory, pendingStep, nextStepIndex, previewsReadyToAdvance]);
 
   useEffect(() => {
     let active = true;
@@ -110,19 +147,22 @@ export default function ConfiguratorPage() {
 
     try {
       const response = await submitQuote({
-        packageId: productConfig.id,
         vehicleId: configurator.selectedVehicle._id,
         selectedOptionalExtraIds: configurator.selectedOptionalExtras.map((item) => item.referenceId),
         customerInfo: customer
       });
 
-      navigate("/quote-success", {
-        state: {
-          quoteId: response.quoteId,
-          customerName: customer.name,
-          totalPrice: configurator.grandTotal
-        }
-      });
+      const confirmation = {
+        quoteId: response.quoteId,
+        customerName: customer.name,
+        totalPrice: response.totalPrice
+      };
+      try {
+        window.sessionStorage.setItem("coast-quote-confirmation", JSON.stringify(confirmation));
+      } catch {
+        // The confirmation is still available through navigation state.
+      }
+      navigate("/quote-success", { state: confirmation });
     } catch (submitError) {
       setError(submitError.message);
     } finally {
@@ -139,7 +179,6 @@ export default function ConfiguratorPage() {
     grandTotal: configurator.grandTotal,
     customer,
     onCustomerChange: handleCustomerChange,
-    onGenerateSpecification: () => setSpecificationsOpen(true),
     onRequestQuote: handleRequestQuote,
     onReset: configurator.resetBuild,
     submitting
@@ -148,26 +187,26 @@ export default function ConfiguratorPage() {
   return (
     <SiteShell>
       <div className="min-h-screen bg-[#080808] text-white">
-        <header className="border-b border-white/10 bg-[#080808] px-4 py-4 md:px-6">
-          <div className="mx-auto flex max-w-[1600px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center bg-[#efc400] text-xs font-black text-black">CC</span>
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.3em] text-[#efc400]">Coast Canopies</p>
-                  <h1 className="mt-1 text-lg font-semibold leading-none md:text-xl">{productConfig.name}</h1>
+        <header className="border-b border-white/10 bg-[#080808] px-3 py-2.5 sm:px-4 sm:py-4 md:px-6">
+          <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-[#efc400] text-[10px] font-black text-black sm:h-9 sm:w-9 sm:text-xs">CC</span>
+                <div className="min-w-0">
+                  <p className="text-[9px] uppercase tracking-[0.16em] text-[#efc400] sm:text-[10px] sm:tracking-[0.3em]">Coast Canopies</p>
+                  <h1 className="mt-0.5 text-xs font-semibold leading-tight sm:mt-1 sm:text-lg md:text-xl">{productConfig.name}</h1>
                 </div>
               </div>
             </div>
             {configurator.selectedVehicle ? (
-              <div className="flex items-center gap-6 border-t border-white/10 pt-3 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
-                <div>
+              <div className="flex shrink-0 items-center gap-3 border-l border-white/10 pl-3 sm:gap-6 sm:pl-6">
+                <div className="hidden sm:block">
                   <p className="text-[9px] uppercase tracking-[0.2em] text-white/35">Vehicle Price</p>
                   <p className="mt-1 text-sm font-semibold text-white">{formatNzd(configurator.selectedVehicle.price)}</p>
                 </div>
                 <div>
-                  <p className="text-[9px] uppercase tracking-[0.2em] text-white/35">Current Total</p>
-                  <p className="mt-1 text-lg font-semibold text-[#efc400]">{formatNzd(configurator.grandTotal)}</p>
+                  <p className="text-[8px] uppercase tracking-[0.12em] text-white/45 sm:text-[9px] sm:tracking-[0.2em]">Current Total</p>
+                  <p className="mt-0.5 text-sm font-semibold text-[#efc400] sm:mt-1 sm:text-lg">{formatNzd(configurator.grandTotal)}</p>
                 </div>
               </div>
             ) : null}
@@ -181,11 +220,11 @@ export default function ConfiguratorPage() {
         ) : null}
 
         <main className="mx-auto grid max-w-[1600px] lg:h-[calc(100vh-86px)] lg:grid-cols-[minmax(0,2fr)_minmax(360px,1fr)]">
-          <section className="h-[54vh] min-h-[360px] border-b border-white/10 lg:h-full lg:min-h-0 lg:border-b-0 lg:border-r">
+          <section className={`builder-preview ${configurator.activeCategory === "Summary" ? "builder-preview-summary" : ""} overflow-hidden border-b border-white/10 lg:h-full lg:min-h-0 lg:border-b-0 lg:border-r`}>
             <Suspense
               fallback={
                 <div className="flex h-full items-center justify-center bg-[#fdf8e7] text-xs uppercase tracking-[0.25em] text-slate-500">
-                  Loading 3D Studio...
+                  Preparing your 3D preview...
                 </div>
               }
             >
@@ -197,15 +236,16 @@ export default function ConfiguratorPage() {
                 cameraResetKey={configurator.cameraResetKey}
                 modelOverrides={{ vehicle: configurator.selectedVehicle }}
                 accessories={configurator.accessories}
+                previewVersion={configurator.previewVersion}
+                onModelStatusChange={handleModelStatusChange}
               />
             </Suspense>
           </section>
 
-          <ConfiguratorSidebar configurator={configurator} summaryProps={summaryProps} loading={loading} />
+          <ConfiguratorSidebar configurator={configurator} summaryProps={summaryProps} previewStatuses={previewStatuses} loading={loading} />
         </main>
       </div>
 
-      <SpecificationsModal open={specificationsOpen} onClose={() => setSpecificationsOpen(false)} />
     </SiteShell>
   );
 }

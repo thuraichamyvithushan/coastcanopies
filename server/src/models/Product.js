@@ -35,6 +35,10 @@ const productPositionSchema = new mongoose.Schema(
       type: Number,
       required: true
     },
+    z: {
+      type: Number,
+      default: 0
+    },
     width: {
       type: Number,
       required: true

@@ -6,7 +6,19 @@ import { AccessoryModel } from "./AccessoryModel.jsx";
 import { CameraControls } from "./CameraControls.jsx";
 import { VehicleModel } from "./VehicleModel.jsx";
 
-const views = ["front", "rear", "left", "right", "reset"];
+const views = ["left", "right", "rear", "front", "reset"];
+
+const ViewIcon = ({ view }) => {
+  const arrows = {
+    left: <path d="m10 6-6 6 6 6M4 12h16" />,
+    right: <path d="m14 6 6 6-6 6M4 12h16" />,
+    rear: <path d="m6 14 6 6 6-6M12 4v16" />,
+    front: <path d="m6 10 6-6 6 6M12 4v16" />,
+    reset: <><path d="M4 11a8 8 0 1 1 2 6" /><path d="M4 5v6h6" /></>
+  };
+
+  return <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 sm:h-[18px] sm:w-[18px]">{arrows[view]}</svg>;
+};
 
 const canUseWebGL = () => {
   if (typeof window === "undefined") return false;
@@ -14,7 +26,7 @@ const canUseWebGL = () => {
 };
 
 const WebGLUnavailable = ({ onRetry }) => (
-  <div className="relative flex h-full min-h-[50vh] items-center justify-center overflow-hidden bg-[#fdf8e7] px-6 text-center lg:min-h-0">
+  <div className="relative flex h-full min-h-0 items-center justify-center overflow-hidden bg-[#fdf8e7] px-4 text-center sm:px-6">
     <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(circle_at_center,rgba(239,196,0,0.12),transparent_55%)]" />
     <div className="relative max-w-md border border-slate-200 bg-white/70 p-6 shadow-sm">
       <span className="mx-auto flex h-11 w-11 items-center justify-center border border-[#efc400]/50 text-lg text-[#efc400]">3D</span>
@@ -59,6 +71,8 @@ const WebGLViewer = ({
   cameraResetKey,
   modelOverrides,
   accessories,
+  previewVersion,
+  onModelStatusChange,
   onRetry
 }) => {
   const [viewRequest, setViewRequest] = useState({ name: "reset", nonce: 0 });
@@ -86,7 +100,7 @@ const WebGLViewer = ({
   if (contextLost) return <WebGLUnavailable onRetry={onRetry} />;
 
   return (
-    <div className="relative h-full min-h-[50vh] overflow-hidden bg-[#fdf8e7] lg:min-h-0">
+    <div className="relative h-full min-h-0 overflow-hidden bg-[#fdf8e7]">
       <Canvas
         camera={{ position: [3.8, 2.0, 4.5], fov: 36, near: 0.1, far: 80 }}
         dpr={[1, 1.25]}
@@ -123,7 +137,7 @@ const WebGLViewer = ({
         <directionalLight position={[-5, 4, -6]} intensity={0.55} color="#ffffff" />
 
         <group position={[0, 0.02, 0]}>
-          {modelOverrides?.vehicle ? <VehicleModel override={modelOverrides.vehicle} /> : null}
+          {modelOverrides?.vehicle ? <VehicleModel override={modelOverrides.vehicle} previewVersion={previewVersion} onModelStatusChange={onModelStatusChange} /> : null}
           {accessories.map((accessory) => (
             <AccessoryModel
               key={accessory.id}
@@ -137,6 +151,8 @@ const WebGLViewer = ({
                     : undefined
               }
               override={accessory.adminProduct}
+              previewVersion={previewVersion}
+              onModelStatusChange={onModelStatusChange}
             />
           ))}
         </group>
@@ -149,22 +165,26 @@ const WebGLViewer = ({
         <CameraControls request={viewRequest} focusPosition={focusPosition} />
       </Canvas>
 
-      <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1 border border-slate-200/60 bg-white/60 p-1.5 backdrop-blur md:bottom-5">
+      <div role="group" aria-label="3D camera views" className="absolute bottom-0 left-1/2 flex -translate-x-1/2 justify-center gap-1 bg-white/85 shadow-sm backdrop-blur lg:bottom-5 lg:gap-1.5 lg:p-1.5">
         {views.map((view) => (
           <button
             key={view}
             type="button"
+            aria-label={view === "reset" ? "Reset 3D view" : `${view} 3D view`}
+            aria-pressed={viewRequest.name === view}
+            title={view === "reset" ? "Reset view" : `${view[0].toUpperCase()}${view.slice(1)} view`}
             onClick={() => setViewRequest((current) => ({ name: view, nonce: current.nonce + 1 }))}
-            className="px-2.5 py-2 text-[9px] uppercase tracking-[0.16em] text-slate-700 transition hover:bg-[#efc400] hover:text-black sm:px-3 sm:text-[10px]"
+            className={`flex h-9 w-9 shrink-0 items-center justify-center text-slate-700 transition hover:bg-[#efc400] hover:text-black sm:h-10 sm:w-10 lg:h-9 lg:w-auto lg:gap-1.5 lg:px-3 lg:text-[10px] lg:uppercase lg:tracking-[0.1em] ${viewRequest.name === view ? "bg-[#efc400] text-black" : ""}`}
           >
-            {view === "reset" ? "Reset view" : view}
+            <ViewIcon view={view} />
+            <span className="hidden lg:inline">{view === "reset" ? "Reset" : view}</span>
           </button>
         ))}
       </div>
 
-      <div className="pointer-events-none absolute left-4 top-4 border-l-2 border-[#efc400] pl-3 text-slate-800 md:left-6 md:top-6">
+      <div className="pointer-events-none absolute left-3 top-3 border-l-2 border-[#efc400] pl-2 text-slate-800 md:left-6 md:top-6 md:pl-3">
         <p className="text-[10px] uppercase tracking-[0.28em] text-slate-500">Interactive 3D</p>
-        <p className="mt-1 text-xs text-slate-600">Drag to rotate · Scroll to zoom</p>
+        <p className="mt-0.5 text-[10px] text-slate-600 sm:mt-1 sm:text-xs">Drag to rotate · Scroll to zoom</p>
       </div>
       {!modelOverrides?.vehicle ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 text-center text-slate-600">

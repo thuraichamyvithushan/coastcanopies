@@ -127,7 +127,7 @@ export default function AdminDashboardPage() {
                       </span>
                     </div>
                     <p className="mt-2 text-white/55">
-                      {quote.vehicle.name} + {quote.baseSystem.name}
+                      {quote.vehicle.name} · {quote.modules.length + quote.accessories.length} selected products
                     </p>
                     <p className="mt-2 font-display text-2xl uppercase tracking-[0.05em] text-[#f9bf1a]">
                       {formatCurrency(quote.totalPrice)}

@@ -18,7 +18,7 @@ export const CustomerForm = ({ value, onChange }) => (
           name={field.name}
           value={value[field.name]}
           onChange={onChange}
-          className="w-full border border-white/10 bg-[#080808] px-3 py-2.5 text-sm text-white outline-none transition focus:border-[#efc400]"
+          className="w-full border border-white/10 bg-[#080808] px-3 py-3 text-base text-white outline-none transition focus:border-[#efc400] sm:py-2.5 sm:text-sm"
         />
       </label>
     ))}
@@ -29,9 +29,8 @@ export const CustomerForm = ({ value, onChange }) => (
         rows="4"
         value={value.notes}
         onChange={onChange}
-        className="w-full resize-none border border-white/10 bg-[#080808] px-3 py-2.5 text-sm text-white outline-none transition focus:border-[#efc400]"
+        className="w-full resize-none border border-white/10 bg-[#080808] px-3 py-3 text-base text-white outline-none transition focus:border-[#efc400] sm:py-2.5 sm:text-sm"
       />
     </label>
   </div>
 );
-

@@ -1,37 +1,39 @@
 import { preloadModel } from "../../utils/preloadModel.js";
 
-export const ProductCard = ({ item, selected, onClick, priceLabel, description, badge }) => (
+export const ProductCard = ({ item, selected, onClick, priceLabel, description, badge, inlineMeta = false }) => (
   <button
     type="button"
     onClick={onClick}
     onPointerEnter={() => preloadModel(item.modelUrl || item.model)}
     onFocus={() => preloadModel(item.modelUrl || item.model)}
-    className={`w-full rounded-[1.1rem] border p-3 text-left transition duration-300 md:rounded-[1.5rem] md:p-4 xl:p-3.5 2xl:p-4 ${
+    aria-pressed={selected}
+    className={`w-full border-l-2 border-transparent px-1 py-3 text-left transition lg:border lg:p-4 lg:rounded-[1.5rem] xl:p-3.5 2xl:p-4 ${
       selected
-        ? "border-[#f9bf1a] bg-[#f9bf1a]/10 shadow-glow"
-        : "border-white/10 bg-white/[0.03] hover:border-white/30 hover:bg-white/[0.05]"
+        ? "border-l-[#f9bf1a] lg:border-[#f9bf1a] lg:bg-[#f9bf1a]/10 lg:shadow-glow"
+        : "hover:text-[#f9bf1a] lg:border-white/10 lg:bg-white/[0.03] lg:hover:border-white/30 lg:hover:bg-white/[0.05]"
     }`}
   >
-    <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between md:gap-3 xl:flex-col">
+    <div className={`flex justify-between gap-3 ${inlineMeta ? "items-center" : "items-start"}`}>
       <div className="min-w-0">
-        <h4 className="font-display text-base uppercase leading-[1.05] tracking-[0.04em] text-white md:text-xl md:tracking-[0.05em] xl:text-[1.2rem] 2xl:text-[1.3rem]">
+        <h4 className="font-display text-sm font-semibold leading-[1.25] text-white lg:text-xl lg:font-normal lg:uppercase lg:tracking-[0.05em] xl:text-[1.2rem] 2xl:text-[1.3rem]">
           {item.name}
         </h4>
-        <p className="mt-1.5 text-[13px] leading-5 text-white/60 md:text-sm md:leading-6 xl:text-[0.9rem] xl:leading-6 2xl:text-sm 2xl:leading-6">
-          {description || item.description}
-        </p>
+        {!inlineMeta ? (
+          <p className="mt-0.5 line-clamp-2 text-[11px] leading-4 text-white/55 lg:mt-1.5 lg:text-sm lg:leading-6 xl:text-[0.9rem] xl:leading-6 2xl:text-sm 2xl:leading-6">
+            {description || item.description}
+          </p>
+        ) : null}
       </div>
-      <span className="self-start shrink-0 rounded-full border border-white/10 px-2.5 py-1 text-[9px] uppercase tracking-[0.14em] text-[#f9bf1a] md:px-3 md:text-[10px] md:tracking-[0.2em] xl:mt-1">
+      <span className="max-w-[38%] shrink-0 text-right text-[11px] leading-tight text-[#f9bf1a] lg:max-w-none lg:rounded-full lg:border lg:border-white/10 lg:px-3 lg:py-1 lg:text-[10px] lg:uppercase lg:tracking-[0.2em]">
         {priceLabel}
       </span>
     </div>
     {badge ? (
-      <div className="mt-3 flex flex-wrap gap-2">
-        <span className="rounded-full border border-[#f9bf1a]/20 bg-[#f9bf1a]/8 px-2.5 py-1 text-[9px] uppercase tracking-[0.14em] text-[#f9bf1a] md:px-3 md:text-[10px] md:tracking-[0.2em]">
+      <div className="mt-2 hidden flex-wrap gap-2 lg:flex">
+        <span className="rounded-full border border-[#f9bf1a]/20 bg-[#f9bf1a]/8 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-[#f9bf1a]">
           {badge}
         </span>
       </div>
     ) : null}
   </button>
 );
-
