@@ -18,7 +18,6 @@ export const categoryOrder = [
 ];
 
 export const productConfig = {
-  name: "Custom Canopy Build",
   brand: "Coast Canopies",
   currency: "NZD",
   standardInclusionCount: 26,

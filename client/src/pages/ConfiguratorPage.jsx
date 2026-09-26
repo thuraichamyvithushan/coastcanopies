@@ -187,14 +187,13 @@ export default function ConfiguratorPage() {
   return (
     <SiteShell>
       <div className="min-h-screen bg-[#080808] text-white">
-        <header className="border-b border-white/10 bg-[#080808] px-3 py-2.5 sm:px-4 sm:py-4 md:px-6">
-          <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3">
+        <header className="border-b border-white/10 bg-[#080808] px-3 py-2.5 sm:px-4 sm:py-4 md:px-6 lg:flex lg:h-[86px] lg:items-center lg:py-0">
+          <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3 lg:w-full">
             <div className="min-w-0">
               <div className="flex items-center gap-2.5 sm:gap-3">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-[#efc400] text-[10px] font-black text-black sm:h-9 sm:w-9 sm:text-xs">CC</span>
                 <div className="min-w-0">
-                  <p className="text-[9px] uppercase tracking-[0.16em] text-[#efc400] sm:text-[10px] sm:tracking-[0.3em]">Coast Canopies</p>
-                  <h1 className="mt-0.5 text-xs font-semibold leading-tight sm:mt-1 sm:text-lg md:text-xl">{productConfig.name}</h1>
+                  <h1 className="text-sm font-semibold leading-tight text-white sm:text-lg md:text-xl">Coast Canopies</h1>
                 </div>
               </div>
             </div>

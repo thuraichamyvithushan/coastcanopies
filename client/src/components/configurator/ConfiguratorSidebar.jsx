@@ -87,7 +87,7 @@ export const ConfiguratorSidebar = ({ configurator, summaryProps, previewStatuse
             <p className="hidden text-[10px] uppercase tracking-[0.28em] text-[#efc400] lg:block">Step 1</p>
             <h2 className="text-sm font-semibold lg:mt-2 lg:text-xl"><span className="lg:hidden">Vehicle</span><span className="hidden lg:inline">Choose your vehicle</span></h2>
             <p className="mt-1 text-xs leading-5 text-white/60 lg:mt-2 lg:text-sm lg:leading-6">Select a vehicle to start your build.</p>
-            <div className="mt-2 divide-y divide-white/10 lg:mt-5 lg:space-y-3 lg:divide-y-0">
+            <div className="mt-2 lg:mt-5 lg:space-y-3">
               {configurator.vehicles.map((vehicle) => (
                 <ProductCard
                   key={vehicle._id}
@@ -108,7 +108,7 @@ export const ConfiguratorSidebar = ({ configurator, summaryProps, previewStatuse
             <p className="hidden text-[10px] uppercase tracking-[0.28em] text-[#efc400] lg:block">Step 2</p>
             <h2 className="text-sm font-semibold lg:mt-2 lg:text-xl"><span className="lg:hidden">Tray</span><span className="hidden lg:inline">Choose your tray</span></h2>
             <p className="mt-1 text-xs text-white/60 lg:mt-2 lg:text-sm">{configurator.selectedVehicle?.name}</p>
-            <div className="mt-2 divide-y divide-white/10 lg:mt-5 lg:space-y-3 lg:divide-y-0">
+            <div className="mt-2 lg:mt-5 lg:space-y-3">
               {configurator.trays.map((tray) => (
                 <ProductCard
                   key={tray.id}
@@ -130,7 +130,7 @@ export const ConfiguratorSidebar = ({ configurator, summaryProps, previewStatuse
             <p className="hidden text-[10px] uppercase tracking-[0.28em] text-[#efc400] lg:block">Step 3</p>
             <h2 className="text-sm font-semibold lg:mt-2 lg:text-xl"><span className="lg:hidden">Canopy</span><span className="hidden lg:inline">Choose your canopy</span></h2>
             <p className="mt-1 text-xs text-white/60 lg:mt-2 lg:text-sm">{configurator.selectedTray?.name}</p>
-            <div className="mt-2 divide-y divide-white/10 lg:mt-5 lg:space-y-3 lg:divide-y-0">
+            <div className="mt-2 lg:mt-5 lg:space-y-3">
               {configurator.canopies.map((canopy) => (
                 <ProductCard
                   key={canopy.id}
@@ -152,7 +152,7 @@ export const ConfiguratorSidebar = ({ configurator, summaryProps, previewStatuse
             <p className="hidden text-[10px] uppercase tracking-[0.28em] text-[#efc400] lg:block">Step 4</p>
             <h2 className="text-sm font-semibold lg:mt-2 lg:text-xl"><span className="lg:hidden">Accessories</span><span className="hidden lg:inline">Add accessories</span></h2>
             <p className="mt-1 text-xs text-white/60 lg:mt-2 lg:text-sm">Optional extras for {configurator.selectedCanopy?.name}</p>
-            <div className="mt-2 divide-y divide-white/10 lg:mt-5 lg:space-y-3 lg:divide-y-0">
+            <div className="mt-2 lg:mt-5 lg:space-y-3">
               {accessories.map((accessory) => (
                 <AccessoryCard
                   key={accessory.id}

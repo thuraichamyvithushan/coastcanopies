@@ -11,9 +11,9 @@ export const AccessoryCard = ({
   <article
     onPointerEnter={() => preloadModel(accessory.model)}
     onFocus={() => preloadModel(accessory.model)}
-    className={`border-l-2 border-transparent px-1 py-3 transition lg:border lg:p-3.5 ${
+    className={`px-1 py-3 transition lg:border lg:p-3.5 ${
       selected
-        ? "border-l-[#efc400] lg:border-[#efc400] lg:bg-[#efc400]/[0.07]"
+        ? "lg:border-[#efc400] lg:bg-[#efc400]/[0.07]"
         : "lg:border-white/10 lg:bg-white/[0.025] lg:hover:border-white/25"
     }`}
   >
@@ -53,5 +53,6 @@ export const AccessoryCard = ({
       </div>
     ) : null}
 
+    <span aria-hidden="true" className={`mt-2 block h-px w-6 lg:hidden ${selected ? "bg-[#efc400]" : "bg-white/25"}`} />
   </article>
 );

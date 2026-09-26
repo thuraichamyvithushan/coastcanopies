@@ -7,9 +7,9 @@ export const ProductCard = ({ item, selected, onClick, priceLabel, description, 
     onPointerEnter={() => preloadModel(item.modelUrl || item.model)}
     onFocus={() => preloadModel(item.modelUrl || item.model)}
     aria-pressed={selected}
-    className={`w-full border-l-2 border-transparent px-1 py-3 text-left transition lg:border lg:p-4 lg:rounded-[1.5rem] xl:p-3.5 2xl:p-4 ${
+    className={`w-full px-1 py-3 text-left transition lg:border lg:p-4 lg:rounded-[1.5rem] xl:p-3.5 2xl:p-4 ${
       selected
-        ? "border-l-[#f9bf1a] lg:border-[#f9bf1a] lg:bg-[#f9bf1a]/10 lg:shadow-glow"
+        ? "lg:border-[#f9bf1a] lg:bg-[#f9bf1a]/10 lg:shadow-glow"
         : "hover:text-[#f9bf1a] lg:border-white/10 lg:bg-white/[0.03] lg:hover:border-white/30 lg:hover:bg-white/[0.05]"
     }`}
   >
@@ -35,5 +35,6 @@ export const ProductCard = ({ item, selected, onClick, priceLabel, description, 
         </span>
       </div>
     ) : null}
+    <span aria-hidden="true" className={`mt-2 block h-px w-6 lg:hidden ${selected ? "bg-[#f9bf1a]" : "bg-white/25"}`} />
   </button>
 );

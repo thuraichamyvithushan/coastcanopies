@@ -15,7 +15,7 @@ export const SpecificationsModal = ({ open, onClose }) => {
           <div>
             <p className="text-[10px] uppercase tracking-[0.3em] text-[#efc400]">Coast Canopies</p>
             <h2 id="specification-title" className="mt-2 text-2xl font-semibold md:text-3xl">
-              {productConfig.name} Specification
+              Specifications
             </h2>
           </div>
           <button

@@ -1,4 +1,3 @@
-import { productConfig } from "../../config/productConfig.js";
 import { formatNzd } from "../../utils/pricing.js";
 import { CustomerForm } from "./CustomerForm.jsx";
 
@@ -18,7 +17,6 @@ export const BuildSummary = ({
   <div>
     <div className="lg:border lg:border-white/10 lg:bg-[#0d0d0d] lg:p-4">
       <p className="text-[10px] uppercase tracking-[0.25em] text-[#efc400]">Build Summary</p>
-      <h2 className="mt-2 text-lg font-semibold text-white sm:text-xl">{productConfig.name}</h2>
       <p className="mt-3 text-sm text-white/65">Vehicle: {selectedVehicle?.name}</p>
       <p className="mt-1 text-sm text-white/65">Tray: {selectedTray?.name}</p>
       <p className="mt-1 text-sm text-white/65">Canopy: {selectedCanopy?.name}</p>
