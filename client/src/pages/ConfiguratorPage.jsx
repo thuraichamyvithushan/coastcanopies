@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import ccLogo from "../assets/cclogo.png";
 import { useNavigate } from "react-router-dom";
 import { fetchProducts, fetchVehicles, submitQuote } from "../api/admin.js";
 import { ConfiguratorSidebar } from "../components/configurator/ConfiguratorSidebar.jsx";
@@ -187,16 +188,11 @@ export default function ConfiguratorPage() {
   return (
     <SiteShell>
       <div className="min-h-screen bg-[#080808] text-white">
-        <header className="border-b border-white/10 bg-[#080808] px-3 py-2.5 sm:px-4 sm:py-4 md:px-6 lg:flex lg:h-[86px] lg:items-center lg:py-0">
+        <header className="border-b border-white/10 bg-[#080808] px-3 py-2 sm:px-4 md:px-6 lg:flex lg:h-[86px] lg:items-center lg:py-0">
           <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-3 lg:w-full">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2.5 sm:gap-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-[#efc400] text-[10px] font-black text-black sm:h-9 sm:w-9 sm:text-xs">CC</span>
-                <div className="min-w-0">
-                  <h1 className="text-sm font-semibold leading-tight text-white sm:text-lg md:text-xl">Coast Canopies</h1>
-                </div>
-              </div>
-            </div>
+            <h1 className="shrink-0">
+              <img src={ccLogo} alt="Coast Canopies" className="block w-20 sm:w-24 lg:w-28" />
+            </h1>
             {configurator.selectedVehicle ? (
               <div className="flex shrink-0 items-center gap-3 border-l border-white/10 pl-3 sm:gap-6 sm:pl-6">
                 <div className="hidden sm:block">
